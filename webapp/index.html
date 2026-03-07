@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYCLE BUDDY // Tactical Relationship System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0e17;
+            --surface: #111827;
+            --surface-light: #1a2332;
+            --border: #1e2d3d;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #475569;
+            --cyan: #00d4ff;
+            --cyan-dim: #0891b2;
+            --cyan-glow: rgba(0, 212, 255, 0.15);
+            --red: #ef4444;
+            --red-dim: #991b1b;
+            --green: #10b981;
+            --amber: #f59e0b;
+            --violet: #8b5cf6;
+            --orange: #f97316;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                linear-gradient(rgba(30, 45, 61, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 45, 61, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* ═══ LOGIN ═══ */
+        .login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 24px;
+        }
+
+        .logo-block { text-align: center; margin-bottom: 4px; }
+
+        .logo-bracket {
+            font-size: 28px;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .logo-text {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 6px;
+        }
+
+        .logo-sub {
+            text-align: center;
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 5px;
+            margin-bottom: 40px;
+        }
+
+        .scan-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+            margin-bottom: 40px;
+            animation: scan 3s ease-in-out infinite;
+        }
+
+        @keyframes scan {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .form-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            padding: 14px 16px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px var(--cyan-glow);
+        }
+
+        .form-input::placeholder { color: var(--text-muted); }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--cyan);
+            color: var(--bg);
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            padding: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .btn-primary:hover {
+            background: #33deff;
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+
+        .header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 4px;
+        }
+
+        .header-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+        }
+
+        .content { padding: 16px; }
+
+        /* ═══ CARDS ═══ */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .card:hover { border-color: var(--text-muted); }
+        .card-accent { height: 3px; }
+        .card-body { padding: 16px; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-name {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .status-badge {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border: 1px solid;
+            border-radius: 2px;
+        }
+
+        .progress-track {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .stat { flex: 1; }
+
+        .stat-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            margin-bottom: 2px;
+        }
+
+        .stat-value { font-size: 16px; font-weight: 700; }
+
+        .mood-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .empty-state {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 48px 24px;
+            text-align: center;
+        }
+
+        .empty-icon { font-size: 48px; color: var(--text-muted); margin-bottom: 16px; }
+
+        .empty-text {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .btn-add {
+            display: inline-block;
+            background: var(--cyan);
+            color: var(--bg);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 12px 24px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-add:hover { box-shadow: 0 0 20px var(--cyan-glow); }
+
+        .btn-add-more {
+            display: block;
+            text-align: center;
+            color: var(--cyan-dim);
+            font-size: 12px;
+            letter-spacing: 1px;
+            padding: 16px;
+            cursor: pointer;
+        }
+
+        .btn-add-more:hover { color: var(--cyan); }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 16px;
+            letter-spacing: 1px;
+        }
+
+        .back-btn:hover { color: var(--text-primary); }
+
+        /* ═══ HUD ═══ */
+        .hud-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .hud-accent { height: 3px; }
+        .hud-body { padding: 24px; }
+
+        .target-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        .phase-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .phase-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .phase-name {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .big-day { margin-bottom: 12px; }
+        .big-day-number { font-size: 56px; font-weight: 700; line-height: 1; }
+        .big-day-total { font-size: 20px; color: var(--text-muted); margin-left: 4px; }
+
+        .hud-mood {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 16px 0;
+        }
+
+        .mini-stats {
+            display: flex;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .mini-stat { flex: 1; text-align: center; }
+
+        .mini-stat-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .mini-stat-value { font-size: 16px; font-weight: 700; }
+
+        .mini-stat-divider {
+            width: 1px;
+            background: var(--border);
+            align-self: stretch;
+        }
+
+        /* ═══ SECTIONS ═══ */
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--cyan);
+            letter-spacing: 3px;
+        }
+
+        .section-title.danger { color: var(--red); }
+
+        .section-line {
+            height: 1px;
+            background: var(--border);
+            margin: 8px 0 12px;
+        }
+
+        .section-line.danger { background: var(--red-dim); }
+
+        .tip-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tip-bullet {
+            color: var(--cyan);
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .tip-bullet.danger { color: var(--red); }
+        .tip-text { font-size: 13px; line-height: 1.6; }
+        .tip-text.muted { color: var(--text-secondary); }
+
+        /* ═══ FORECAST ═══ */
+        .forecast-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 8px;
+        }
+
+        .forecast-row.today {
+            background: var(--surface-light);
+            margin: 0 -16px;
+            padding: 8px 16px;
+        }
+
+        .forecast-day {
+            width: 28px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .forecast-day.today { color: var(--cyan); }
+        .forecast-date { width: 48px; font-size: 11px; color: var(--text-muted); }
+        .forecast-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .forecast-phase { flex: 1; font-size: 11px; }
+        .forecast-energy { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; }
+
+        /* ═══ CHIPS ═══ */
+        .chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            color: var(--bg);
+            font-weight: 700;
+        }
+
+        .chip:hover:not(.active) { border-color: var(--text-muted); }
+
+        /* ═══ BOTTOM NAV ═══ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 14px 12px;
+            text-align: center;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.2s;
+        }
+
+        .nav-btn.active { color: var(--cyan); }
+        .nav-btn:hover { color: var(--text-secondary); }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--red-dim);
+            color: var(--red);
+            font-size: 12px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-msg.show { display: block; }
+        .page-bottom { height: 60px; }
+
+        .delete-btn {
+            background: none;
+            border: 1px solid var(--red-dim);
+            color: var(--red);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .delete-btn:hover { background: rgba(239,68,68,0.1); }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+
+        <!-- ═══ WELCOME / FIRST LAUNCH ═══ -->
+        <div class="screen active" id="screen-welcome">
+            <div class="login-screen">
+                <div class="logo-block">
+                    <span class="logo-bracket">[ </span>
+                    <span class="logo-text">CYCLE BUDDY</span>
+                    <span class="logo-bracket"> ]</span>
+                </div>
+                <div class="logo-sub">TACTICAL RELATIONSHIP SYSTEM</div>
+                <div class="scan-line"></div>
+
+                <div style="color:var(--text-secondary);font-size:13px;line-height:1.8;text-align:center;margin-bottom:32px;">
+                    Мужское приложение для мониторинга женских циклов.<br>
+                    Советы, прогнозы, выживание.
+                </div>
+
+                <div class="form-label">ТВОЁ ИМЯ (ПОЗЫВНОЙ)</div>
+                <input class="form-input" id="welcome-name" placeholder="Например: Андрей" autocomplete="off">
+
+                <button class="btn-primary" onclick="handleWelcome()">
+                    [ НАЧАТЬ МОНИТОРИНГ ]
+                </button>
+
+                <div style="color:var(--text-muted);font-size:10px;text-align:center;margin-top:16px;letter-spacing:1px;">
+                    Все данные хранятся только на твоём устройстве
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ DASHBOARD ═══ -->
+        <div class="screen" id="screen-dashboard">
+            <div class="header">
+                <div class="header-row">
+                    <div class="header-title">DASHBOARD</div>
+                    <div class="header-sub" id="target-count">0 ЦЕЛЕЙ</div>
+                </div>
+            </div>
+            <div class="content" id="dashboard-content"></div>
+            <div class="page-bottom"></div>
+        </div>
+
+        <!-- ═══ ADD PARTNER ═══ -->
+        <div class="screen" id="screen-add">
+            <button class="back-btn" onclick="showScreen('dashboard')">&lt; DASHBOARD</button>
+            <div class="content">
+                <div class="header-title" style="margin-bottom:4px;">НОВАЯ ЦЕЛЬ</div>
+                <div style="height:1px;background:var(--border);margin-bottom:24px;"></div>
+
+                <div class="error-msg" id="add-error"></div>
+
+                <div class="form-label">ИМЯ</div>
+                <input class="form-input" id="add-name" placeholder="Например: Аня" autocomplete="off">
+
+                <div class="form-label">ДАТА НАЧАЛА ПОСЛЕДНИХ МЕСЯЧНЫХ</div>
+                <input class="form-input" id="add-date" type="date">
+
+                <div class="form-label">ДЛИНА ЦИКЛА (ДНЕЙ)</div>
+                <div class="chips-row" id="cycle-chips"></div>
+
+                <div class="form-label" style="margin-top:20px;">ДЛИНА МЕСЯЧНЫХ (ДНЕЙ)</div>
+                <div class="chips-row" id="period-chips"></div>
+
+                <button class="btn-primary" style="margin-top:32px;" onclick="handleAddPartner()">
+                    [ СОХРАНИТЬ ]
+                </button>
+            </div>
+        </div>
+
+        <!-- ═══ DETAIL ═══ -->
+        <div class="screen" id="screen-detail">
+            <button class="back-btn" onclick="showScreen('dashboard')">&lt; DASHBOARD</button>
+            <div class="content" id="detail-content"></div>
+            <div class="page-bottom"></div>
+        </div>
+
+        <!-- ═══ SETTINGS ═══ -->
+        <div class="screen" id="screen-settings">
+            <div class="header">
+                <div class="header-title">СИСТЕМА</div>
+            </div>
+            <div class="content">
+                <div class="section">
+                    <div class="section-title">О ПРОГРАММЕ</div>
+                    <div class="section-line"></div>
+                    <div class="tip-text" style="color:var(--text-secondary);line-height:1.8;">
+                        CYCLE BUDDY — тактическая система мониторинга женских циклов.<br><br>
+                        Помогает мужчинам выживать, понимать и быть лучшими партнёрами.<br><br>
+                        Все данные хранятся локально на твоём устройстве.
+                    </div>
+                    <div style="color:var(--text-muted);font-size:11px;margin-top:16px;letter-spacing:1px;">
+                        v1.0.0 // BUILD 001
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="section-title">АГЕНТ</div>
+                    <div class="section-line"></div>
+                    <div id="settings-user" style="color:var(--text-secondary);font-size:13px;"></div>
+                </div>
+                <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleReset()">
+                    [ СБРОСИТЬ ВСЕ ДАННЫЕ ]
+                </button>
+            </div>
+            <div class="page-bottom"></div>
+        </div>
+
+        <!-- ═══ BOTTOM NAV ═══ -->
+        <div class="bottom-nav" id="bottom-nav" style="display:none;">
+            <button class="nav-btn active" id="nav-monitor" onclick="showScreen('dashboard')">MONITOR</button>
+            <button class="nav-btn" id="nav-system" onclick="showScreen('settings')">SYSTEM</button>
+        </div>
+    </div>
+
+<script>
+// ════════════════════════════════════════════
+// PHASE DATA — ALL LOGIC RUNS IN BROWSER
+// ════════════════════════════════════════════
+const PHASES = {
+    menstruation: {
+        name: "Менструация", color: "#ef4444", energy: "low", energyLabel: "LOW",
+        mood: "Она как медведь после зимней спячки — не буди зверя",
+        tips: [
+            "Грелка, плед, чай — святая троица выживания. Принеси все три и молча уйди",
+            "Шоколад сейчас ценнее бриллиантов. Серьёзно. Запасись заранее",
+            "Она плачет от рекламы с котёнком? Это нормально. Плачь вместе, если надо",
+            "Посуда в раковине? Бро, ты знаешь что делать. Молча. Без ожидания медали",
+            "Предложи сериал. Любой. Даже тот ужасный, который она любит",
+            "Если она говорит 'всё нормально' — всё НЕ нормально. Неси шоколад",
+        ],
+        avoid: [
+            "'Ты что, на месячных?' — фраза, после которой тебя могут не найти",
+            "Комментарии о еде и весе = билет в один конец на диван",
+            "Серьёзные разговоры отложи. Совсем. На потом. Серьёзно",
+            "Не предлагай 'пойти побегать, чтобы полегчало'. Просто не надо",
+        ],
+    },
+    follicular: {
+        name: "Фолликулярная фаза", color: "#10b981", energy: "rising", energyLabel: "RISING",
+        mood: "Она как после перезагрузки — всё работает, баги пофикшены",
+        tips: [
+            "Она в хорошем настроении. Не знаешь почему — не спрашивай. Просто наслаждайся",
+            "Самое время предложить то, на что она обычно говорит 'нет'. Шансы растут!",
+            "Хочешь обсудить что-то важное? Сейчас или никогда — через неделю будет поздно",
+            "Она энергичная и весёлая. Предложи свидание, прогулку, приключение",
+            "Это как 'счастливый час' — но вместо скидок у тебя скидка на косяки",
+        ],
+        avoid: [
+            "Не сиди в телефоне, когда она хочет общаться. Эти дни на вес золота, бро",
+            "Не трать это окно на очередной вечер с PlayStation. Она же улыбается!",
+        ],
+    },
+    ovulation: {
+        name: "Овуляция", color: "#f59e0b", energy: "peak", energyLabel: "PEAK",
+        mood: "Максимальная привлекательность и уверенность. Она — огонь, а ты — мотылёк",
+        tips: [
+            "Она выглядит и чувствует себя богиней. Скажи ей об этом. Вслух. Словами",
+            "Комплименты сейчас заходят как кэшбэк 100% — вкладывай не жалея",
+            "Планируй свидание мечты. Она скажет 'да' на всё. Ну, почти на всё",
+            "Она общительная и сияет? Другие мужики тоже это заметят. Будь рядом, ковбой",
+            "Романтика на максимум. Свечи, ужин, слова. Да, придётся постараться",
+        ],
+        avoid: [
+            "Не будь мебелью. Она хочет внимания, а не сожителя с Wi-Fi",
+            "Не ревнуй к каждому, кто на неё посмотрел. Она с тобой. Пока что",
+        ],
+    },
+    luteal: {
+        name: "Лютеиновая фаза", color: "#8b5cf6", energy: "declining", energyLabel: "DECLINING",
+        mood: "Батарейка садится. Она как телефон на 15% — экономь её ресурсы",
+        tips: [
+            "Уютный вечер дома > любой вечеринки. Плед, фильм, обнимашки",
+            "Она задумчивая? Не спрашивай 'О чём думаешь?' сто раз. Дай побыть в себе",
+            "Приготовь что-нибудь вкусное. Путь к прощению любых грехов через желудок",
+            "Настроение скачет как курс биткоина. Не пытайся предсказать — просто держись",
+            "Она захочет пересмотреть отношения? Это не всерьёз. Просто кивай и обнимай",
+        ],
+        avoid: [
+            "Не планируй марафон, поход и встречу с друзьями в один день",
+            "Не спрашивай 'А что на ужин?' — лучше сам свари хотя бы пельмени",
+            "Не спорь по мелочам. Носки на полу — ерунда. Подними и живи дальше",
+        ],
+    },
+    pms: {
+        name: "ПМС", color: "#f97316", energy: "low", energyLabel: "LOW",
+        mood: "Сегодня ты будешь виноват во всём. Во всех проблемах мира. Просто прими это",
+        tips: [
+            "Ты не прав. Даже если прав — ты не прав. Запомни это на ближайшие дни",
+            "Она плачет? Обними. Она злится? Обними. Она швыряет подушку? Уклонись, потом обними",
+            "Принеси еду, не спрашивая. Угадай что она хочет. Не угадал? Принеси ещё",
+            "Фраза 'может тебе прилечь?' может стоить тебе жизни. Замени на 'хочешь чай?'",
+            "Её бесит как ты дышишь? Поздравляю, ты нормальный мужик в фазе ПМС",
+            "Помой посуду, пропылесось. Не жди спасибо. Ты герой без плаща",
+            "Дай ей пространство, если просит. Но будь рядом, если не просит. Да, это квест",
+        ],
+        avoid: [
+            "'Это у тебя ПМС' = последние слова в жизни многих смелых мужчин",
+            "'Успокойся' — слово-триггер. Произнесёшь — не вернёшься",
+            "Шутки про гормоны = спать на диване. Минимум. Если повезёт",
+            "Не пытайся 'починить' её настроение логикой. Логика тут не живёт",
+            "'Да ладно, ерунда' = взрыв атомной бомбы",
+            "'У моей мамы такого не было' — ты ведь не настолько глуп, правда?",
+        ],
+    },
+};
+
+const ENERGY_COLORS = { low: '#ef4444', rising: '#10b981', peak: '#f59e0b', declining: '#8b5cf6' };
+const DAY_NAMES_RU = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+
+// ════════════════════════════════════════════
+// LOCAL STORAGE
+// ════════════════════════════════════════════
+function loadData() {
+    try {
+        return JSON.parse(localStorage.getItem('cb_data')) || { user: null, partners: [] };
+    } catch { return { user: null, partners: [] }; }
+}
+
+function saveData(data) {
+    localStorage.setItem('cb_data', JSON.stringify(data));
+}
+
+// ════════════════════════════════════════════
+// CYCLE CALCULATION
+// ════════════════════════════════════════════
+function calcPhase(startDate, cycleLen, periodLen, targetDate) {
+    const start = new Date(startDate);
+    const target = targetDate ? new Date(targetDate) : new Date();
+    const diffMs = target.getTime() - start.getTime();
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    let dayInCycle = diffDays % cycleLen;
+    if (dayInCycle < 0) dayInCycle += cycleLen;
+
+    const ovulationDay = cycleLen - 14;
+    const pmsStart = cycleLen - 5;
+
+    let phase, daysLeft;
+    if (dayInCycle < periodLen) {
+        phase = 'menstruation';
+        daysLeft = periodLen - dayInCycle;
+    } else if (dayInCycle < ovulationDay - 2) {
+        phase = 'follicular';
+        daysLeft = (ovulationDay - 2) - dayInCycle;
+    } else if (dayInCycle < ovulationDay + 2) {
+        phase = 'ovulation';
+        daysLeft = (ovulationDay + 2) - dayInCycle;
+    } else if (dayInCycle < pmsStart) {
+        phase = 'luteal';
+        daysLeft = pmsStart - dayInCycle;
+    } else {
+        phase = 'pms';
+        daysLeft = cycleLen - dayInCycle;
+    }
+
+    const cycleNumber = Math.floor(diffDays / cycleLen);
+    const currentCycleStart = new Date(start.getTime() + cycleNumber * cycleLen * 86400000);
+    const nextPeriod = new Date(currentCycleStart.getTime() + cycleLen * 86400000);
+    const daysUntilNext = Math.round((nextPeriod.getTime() - target.getTime()) / 86400000);
+
+    const info = PHASES[phase];
+    return {
+        phase,
+        phaseName: info.name,
+        color: info.color,
+        dayInCycle: dayInCycle + 1,
+        cycleLen,
+        daysLeft,
+        daysUntilNext,
+        nextPeriodDate: nextPeriod.toISOString().slice(0, 10),
+        mood: info.mood,
+        energy: info.energyLabel,
+        energyColor: ENERGY_COLORS[info.energy],
+        tips: info.tips,
+        avoid: info.avoid,
+    };
+}
+
+function getForecast(startDate, cycleLen, periodLen, days) {
+    const result = [];
+    const today = new Date();
+    for (let i = 0; i < days; i++) {
+        const d = new Date(today.getTime() + i * 86400000);
+        const dateStr = d.toISOString().slice(0, 10);
+        const info = calcPhase(startDate, cycleLen, periodLen, dateStr);
+        result.push({
+            date: dateStr,
+            dayName: DAY_NAMES_RU[d.getDay()],
+            ...info,
+        });
+    }
+    return result;
+}
+
+// ════════════════════════════════════════════
+// SCREENS
+// ════════════════════════════════════════════
+let selectedCycleLength = 28;
+let selectedPeriodLength = 5;
+
+function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(`screen-${name}`).classList.add('active');
+
+    const nav = document.getElementById('bottom-nav');
+    const showNav = ['dashboard', 'settings'].includes(name);
+    nav.style.display = showNav ? 'flex' : 'none';
+
+    document.getElementById('nav-monitor').classList.toggle('active', name === 'dashboard');
+    document.getElementById('nav-system').classList.toggle('active', name === 'settings');
+
+    if (name === 'dashboard') renderDashboard();
+    if (name === 'settings') renderSettings();
+}
+
+// ════════════════════════════════════════════
+// WELCOME
+// ════════════════════════════════════════════
+function handleWelcome() {
+    const name = document.getElementById('welcome-name').value.trim();
+    if (!name) { document.getElementById('welcome-name').style.borderColor = 'var(--red)'; return; }
+
+    const data = loadData();
+    data.user = name;
+    saveData(data);
+    showScreen('dashboard');
+}
+
+// ════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════
+function renderDashboard() {
+    const data = loadData();
+    const content = document.getElementById('dashboard-content');
+    const partners = data.partners || [];
+
+    document.getElementById('target-count').textContent =
+        `${partners.length} ${partners.length === 1 ? 'ЦЕЛЬ' : 'ЦЕЛЕЙ'}`;
+
+    if (partners.length === 0) {
+        content.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">◎</div>
+                <div class="empty-text">НЕТ АКТИВНЫХ ЦЕЛЕЙ<br>Добавь партнёршу для мониторинга</div>
+                <button class="btn-add" onclick="showAddScreen()">[ + ДОБАВИТЬ ЦЕЛЬ ]</button>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    partners.forEach((p, idx) => {
+        const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
+        const pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
+
+        html += `<div class="card" onclick="showDetail(${idx})">
+            <div class="card-accent" style="background:${s.color}"></div>
+            <div class="card-body">
+                <div class="card-header">
+                    <div class="card-name">${p.name.toUpperCase()}</div>
+                    <div class="status-badge" style="border-color:${s.color};color:${s.color}">${s.phaseName.toUpperCase()}</div>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar" style="width:${pct}%;background:${s.color}"></div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-label">ДЕНЬ</div>
+                        <div class="stat-value">${s.dayInCycle}/${s.cycleLen}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">ЭНЕРГИЯ</div>
+                        <div class="stat-value" style="color:${s.energyColor}">${s.energy}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">СЛЕД. ЦИКЛ</div>
+                        <div class="stat-value">${s.daysUntilNext}д</div>
+                    </div>
+                </div>
+                <div class="mood-text">${s.mood}</div>
+            </div>
+        </div>`;
+    });
+
+    html += `<div class="btn-add-more" onclick="showAddScreen()">[ + ДОБАВИТЬ ЦЕЛЬ ]</div>`;
+    content.innerHTML = html;
+}
+
+// ════════════════════════════════════════════
+// ADD PARTNER
+// ════════════════════════════════════════════
+function showAddScreen() {
+    showScreen('add');
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-date').value = '';
+    document.getElementById('add-error').classList.remove('show');
+    selectedCycleLength = 28;
+    selectedPeriodLength = 5;
+    renderChips();
+}
+
+function renderChips() {
+    document.getElementById('cycle-chips').innerHTML = [25,26,27,28,29,30,31,32].map(v =>
+        `<div class="chip ${v===selectedCycleLength?'active':''}" onclick="selectedCycleLength=${v};renderChips()">${v}</div>`
+    ).join('');
+    document.getElementById('period-chips').innerHTML = [3,4,5,6,7].map(v =>
+        `<div class="chip ${v===selectedPeriodLength?'active':''}" onclick="selectedPeriodLength=${v};renderChips()">${v}</div>`
+    ).join('');
+}
+
+function handleAddPartner() {
+    const name = document.getElementById('add-name').value.trim();
+    const dateVal = document.getElementById('add-date').value;
+    const err = document.getElementById('add-error');
+
+    if (!name) { err.textContent = 'Введи имя цели'; err.classList.add('show'); return; }
+    if (!dateVal) { err.textContent = 'Выбери дату начала цикла'; err.classList.add('show'); return; }
+
+    const data = loadData();
+    data.partners.push({
+        name,
+        startDate: dateVal,
+        cycleLen: selectedCycleLength,
+        periodLen: selectedPeriodLength,
+    });
+    saveData(data);
+    showScreen('dashboard');
+}
+
+// ════════════════════════════════════════════
+// DETAIL
+// ════════════════════════════════════════════
+function showDetail(idx) {
+    showScreen('detail');
+    const data = loadData();
+    const p = data.partners[idx];
+    if (!p) return;
+
+    const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
+    const forecast = getForecast(p.startDate, p.cycleLen, p.periodLen, 14);
+    const pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
+    const content = document.getElementById('detail-content');
+
+    content.innerHTML = `
+    <div class="hud-card">
+        <div class="hud-accent" style="background:${s.color}"></div>
+        <div class="hud-body">
+            <div class="target-name">${p.name.toUpperCase()}</div>
+            <div class="phase-row">
+                <div class="phase-dot" style="background:${s.color}"></div>
+                <div class="phase-name" style="color:${s.color}">${s.phaseName.toUpperCase()}</div>
+            </div>
+            <div class="big-day">
+                <span class="big-day-number">${s.dayInCycle}</span>
+                <span class="big-day-total">/ ${s.cycleLen}</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-bar" style="width:${pct}%;background:${s.color}"></div>
+            </div>
+            <div class="hud-mood">${s.mood}</div>
+            <div class="mini-stats">
+                <div class="mini-stat">
+                    <div class="mini-stat-label">ФАЗА ЕЩЁ</div>
+                    <div class="mini-stat-value">${s.daysLeft}д</div>
+                </div>
+                <div class="mini-stat-divider"></div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">СЛЕД. ЦИКЛ</div>
+                    <div class="mini-stat-value">${s.daysUntilNext}д</div>
+                </div>
+                <div class="mini-stat-divider"></div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">ДАТА</div>
+                    <div class="mini-stat-value">${s.nextPeriodDate.slice(5)}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">РАЗВЕДДАННЫЕ</div>
+        <div class="section-line"></div>
+        ${s.tips.map(t => `<div class="tip-row"><span class="tip-bullet">&gt;</span><span class="tip-text">${t}</span></div>`).join('')}
+    </div>
+
+    <div class="section">
+        <div class="section-title danger">УГРОЗЫ</div>
+        <div class="section-line danger"></div>
+        ${s.avoid.map(a => `<div class="tip-row"><span class="tip-bullet danger">!</span><span class="tip-text muted">${a}</span></div>`).join('')}
+    </div>
+
+    <div class="section">
+        <div class="section-title">ПРОГНОЗ 14 ДНЕЙ</div>
+        <div class="section-line"></div>
+        ${forecast.map((day, i) => `<div class="forecast-row ${i===0?'today':''}">
+            <span class="forecast-day ${i===0?'today':''}">${day.dayName}</span>
+            <span class="forecast-date">${day.date.slice(5)}</span>
+            <span class="forecast-dot" style="background:${day.color}"></span>
+            <span class="forecast-phase" style="color:${day.color}">${day.phaseName}</span>
+            <span class="forecast-energy">${day.energy}</span>
+        </div>`).join('')}
+    </div>
+
+    <button class="delete-btn" onclick="deletePartner(${idx})">[ УДАЛИТЬ ЦЕЛЬ ]</button>
+    <div class="page-bottom"></div>`;
+}
+
+function deletePartner(idx) {
+    if (!confirm('Удалить эту цель?')) return;
+    const data = loadData();
+    data.partners.splice(idx, 1);
+    saveData(data);
+    showScreen('dashboard');
+}
+
+// ════════════════════════════════════════════
+// SETTINGS
+// ════════════════════════════════════════════
+function renderSettings() {
+    const data = loadData();
+    document.getElementById('settings-user').textContent = `Позывной: ${data.user || 'N/A'}`;
+}
+
+function handleReset() {
+    if (!confirm('Удалить все данные? Это необратимо.')) return;
+    localStorage.removeItem('cb_data');
+    location.reload();
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+const initData = loadData();
+if (initData.user) {
+    showScreen('dashboard');
+} else {
+    showScreen('welcome');
+}
+</script>
+</body>
+</html>
