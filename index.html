@@ -1043,8 +1043,55 @@ function showDetail(idx) {
         </div>`).join('')}
     </div>
 
+    <div class="section">
+        <div class="section-title" style="color:var(--green)">ВВОД ДАННЫХ</div>
+        <div class="section-line" style="background:var(--green)"></div>
+        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">
+            Месячные начались раньше или позже прогноза? Введи фактическую дату — прогноз пересчитается.
+        </div>
+        <div class="form-label">ФАКТИЧЕСКОЕ НАЧАЛО МЕСЯЧНЫХ</div>
+        <input class="form-input" type="date" id="actual-period-date" value="${new Date().toISOString().slice(0,10)}">
+        <button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="updatePeriodStart(${idx})">
+            [ ОБНОВИТЬ ЦИКЛ ]
+        </button>
+        <div class="error-msg" id="update-error"></div>
+        <div id="update-success" style="display:none;background:rgba(16,185,129,0.1);border:1px solid #065f46;color:var(--green);font-size:12px;padding:10px 14px;border-radius:4px;margin-top:8px;"></div>
+    </div>
+
     <button class="delete-btn" onclick="deletePartner(${idx})">[ УДАЛИТЬ ЦЕЛЬ ]</button>
     <div class="page-bottom"></div>`;
+}
+
+function updatePeriodStart(idx) {
+    const dateVal = document.getElementById('actual-period-date').value;
+    const errEl = document.getElementById('update-error');
+    const successEl = document.getElementById('update-success');
+    errEl.classList.remove('show');
+    successEl.style.display = 'none';
+
+    if (!dateVal) { errEl.textContent = 'Выбери дату'; errEl.classList.add('show'); return; }
+
+    const inputDate = new Date(dateVal);
+    const today = new Date();
+    if (inputDate > today) { errEl.textContent = 'Дата не может быть в будущем'; errEl.classList.add('show'); return; }
+
+    const data = loadData();
+    const p = data.partners[idx];
+    if (!p) return;
+
+    // Save history of previous start dates
+    if (!p.history) p.history = [];
+    p.history.push({ prevStart: p.startDate, updatedAt: new Date().toISOString() });
+
+    // Update to new actual period start
+    p.startDate = dateVal;
+    saveData(data);
+
+    successEl.textContent = `Цикл обновлён! Новая точка отсчёта: ${dateVal}`;
+    successEl.style.display = 'block';
+
+    // Re-render detail after short delay so user sees the success message
+    setTimeout(() => showDetail(idx), 1200);
 }
 
 function deletePartner(idx) {
