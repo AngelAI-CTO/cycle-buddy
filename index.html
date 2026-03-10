@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -559,19 +559,19 @@
                 <div class="scan-line"></div>
 
                 <div style="color:var(--text-secondary);font-size:13px;line-height:1.8;text-align:center;margin-bottom:32px;">
-                    Мужское приложение для мониторинга женских циклов.<br>
-                    Советы, прогнозы, выживание.
+                    A man's app for monitoring female cycles.<br>
+                    Tips, forecasts, survival.
                 </div>
 
-                <div class="form-label">ТВОЁ ИМЯ (ПОЗЫВНОЙ)</div>
-                <input class="form-input" id="welcome-name" placeholder="Например: Андрей" autocomplete="off">
+                <div class="form-label">YOUR NAME (CALLSIGN)</div>
+                <input class="form-input" id="welcome-name" placeholder="e.g. Andrew" autocomplete="off">
 
                 <button class="btn-primary" onclick="handleWelcome()">
-                    [ НАЧАТЬ МОНИТОРИНГ ]
+                    [ START MONITORING ]
                 </button>
 
                 <div style="color:var(--text-muted);font-size:10px;text-align:center;margin-top:16px;letter-spacing:1px;">
-                    Все данные хранятся только на твоём устройстве
+                    All data is stored only on your device
                 </div>
             </div>
         </div>
@@ -581,7 +581,7 @@
             <div class="header">
                 <div class="header-row">
                     <div class="header-title">DASHBOARD</div>
-                    <div class="header-sub" id="target-count">0 ЦЕЛЕЙ</div>
+                    <div class="header-sub" id="target-count">0 TARGETS</div>
                 </div>
             </div>
             <div class="content" id="dashboard-content"></div>
@@ -592,25 +592,25 @@
         <div class="screen" id="screen-add">
             <button class="back-btn" onclick="showScreen('dashboard')">&lt; DASHBOARD</button>
             <div class="content">
-                <div class="header-title" style="margin-bottom:4px;">НОВАЯ ЦЕЛЬ</div>
+                <div class="header-title" style="margin-bottom:4px;">NEW TARGET</div>
                 <div style="height:1px;background:var(--border);margin-bottom:24px;"></div>
 
                 <div class="error-msg" id="add-error"></div>
 
-                <div class="form-label">ИМЯ</div>
-                <input class="form-input" id="add-name" placeholder="Например: Аня" autocomplete="off">
+                <div class="form-label">NAME</div>
+                <input class="form-input" id="add-name" placeholder="e.g. Anna" autocomplete="off">
 
-                <div class="form-label">ДАТА НАЧАЛА ПОСЛЕДНИХ МЕСЯЧНЫХ</div>
+                <div class="form-label">LAST PERIOD START DATE</div>
                 <input class="form-input" id="add-date" type="date">
 
-                <div class="form-label">ДЛИНА ЦИКЛА (ДНЕЙ)</div>
+                <div class="form-label">CYCLE LENGTH (DAYS)</div>
                 <div class="chips-row" id="cycle-chips"></div>
 
-                <div class="form-label" style="margin-top:20px;">ДЛИНА МЕСЯЧНЫХ (ДНЕЙ)</div>
+                <div class="form-label" style="margin-top:20px;">PERIOD LENGTH (DAYS)</div>
                 <div class="chips-row" id="period-chips"></div>
 
                 <button class="btn-primary" style="margin-top:32px;" onclick="handleAddPartner()">
-                    [ СОХРАНИТЬ ]
+                    [ SAVE ]
                 </button>
             </div>
         </div>
@@ -625,45 +625,45 @@
         <!-- ═══ SETTINGS ═══ -->
         <div class="screen" id="screen-settings">
             <div class="header">
-                <div class="header-title">СИСТЕМА</div>
+                <div class="header-title">SYSTEM</div>
             </div>
             <div class="content">
                 <div class="section">
-                    <div class="section-title">О ПРОГРАММЕ</div>
+                    <div class="section-title">ABOUT</div>
                     <div class="section-line"></div>
                     <div class="tip-text" style="color:var(--text-secondary);line-height:1.8;">
-                        CYCLE BUDDY — тактическая система мониторинга женских циклов.<br><br>
-                        Помогает мужчинам выживать, понимать и быть лучшими партнёрами.<br><br>
-                        Все данные хранятся локально на твоём устройстве.
+                        CYCLE BUDDY — a tactical system for monitoring female cycles.<br><br>
+                        Helps men survive, understand, and be better partners.<br><br>
+                        All data is stored locally on your device.
                     </div>
                     <div style="color:var(--text-muted);font-size:11px;margin-top:16px;letter-spacing:1px;">
                         v1.0.0 // BUILD 001
                     </div>
                 </div>
                 <div class="section">
-                    <div class="section-title">УВЕДОМЛЕНИЯ</div>
+                    <div class="section-title">NOTIFICATIONS</div>
                     <div class="section-line"></div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <div style="color:var(--text-secondary);font-size:12px;line-height:1.6;">
-                            Ежедневный статус по всем целям
+                            Daily status for all targets
                         </div>
                         <button id="notif-toggle" class="btn-add" style="font-size:10px;padding:8px 16px;white-space:nowrap;" onclick="toggleNotifications()">
-                            ЗАГРУЗКА...
+                            LOADING...
                         </button>
                     </div>
                     <div id="notif-status" style="color:var(--text-muted);font-size:11px;letter-spacing:1px;"></div>
                     <button id="notif-test" style="display:none;margin-top:8px;background:none;border:1px solid var(--cyan-dim);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 16px;border-radius:4px;cursor:pointer;width:100%;" onclick="sendTestNotification()">
-                        [ ТЕСТ УВЕДОМЛЕНИЯ ]
+                        [ TEST NOTIFICATION ]
                     </button>
                 </div>
 
                 <div class="section">
-                    <div class="section-title">АГЕНТ</div>
+                    <div class="section-title">AGENT</div>
                     <div class="section-line"></div>
                     <div id="settings-user" style="color:var(--text-secondary);font-size:13px;"></div>
                 </div>
                 <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleReset()">
-                    [ СБРОСИТЬ ВСЕ ДАННЫЕ ]
+                    [ RESET ALL DATA ]
                 </button>
             </div>
             <div class="page-bottom"></div>
@@ -682,94 +682,94 @@
 // ════════════════════════════════════════════
 const PHASES = {
     menstruation: {
-        name: "Менструация", color: "#ef4444", energy: "low", energyLabel: "LOW",
-        mood: "Она как медведь после зимней спячки — не буди зверя",
+        name: "Menstruation", color: "#ef4444", energy: "low", energyLabel: "LOW",
+        mood: "She's like a bear after hibernation — don't wake the beast",
         tips: [
-            "Грелка, плед, чай — святая троица выживания. Принеси все три и молча уйди",
-            "Шоколад сейчас ценнее бриллиантов. Серьёзно. Запасись заранее",
-            "Она плачет от рекламы с котёнком? Это нормально. Плачь вместе, если надо",
-            "Посуда в раковине? Бро, ты знаешь что делать. Молча. Без ожидания медали",
-            "Предложи сериал. Любой. Даже тот ужасный, который она любит",
-            "Если она говорит 'всё нормально' — всё НЕ нормально. Неси шоколад",
+            "Heating pad, blanket, tea — the holy trinity of survival. Bring all three and quietly leave",
+            "Chocolate is worth more than diamonds right now. Seriously. Stock up in advance",
+            "She's crying at a kitten commercial? That's normal. Cry with her if needed",
+            "Dishes in the sink? Bro, you know what to do. Silently. No medal expected",
+            "Suggest a TV show. Any show. Even that awful one she loves",
+            "If she says 'I'm fine' — she is NOT fine. Bring chocolate",
         ],
         avoid: [
-            "'Ты что, на месячных?' — фраза, после которой тебя могут не найти",
-            "Комментарии о еде и весе = билет в один конец на диван",
-            "Серьёзные разговоры отложи. Совсем. На потом. Серьёзно",
-            "Не предлагай 'пойти побегать, чтобы полегчало'. Просто не надо",
+            "'Are you on your period?' — a phrase after which they may never find you",
+            "Comments about food and weight = one-way ticket to the couch",
+            "Serious conversations — postpone them. Completely. For later. Seriously",
+            "Don't suggest 'going for a run to feel better'. Just don't",
         ],
     },
     follicular: {
-        name: "Фолликулярная фаза", color: "#10b981", energy: "rising", energyLabel: "RISING",
-        mood: "Она как после перезагрузки — всё работает, баги пофикшены",
+        name: "Follicular Phase", color: "#10b981", energy: "rising", energyLabel: "RISING",
+        mood: "She's like after a reboot — everything works, bugs are fixed",
         tips: [
-            "Она в хорошем настроении. Не знаешь почему — не спрашивай. Просто наслаждайся",
-            "Самое время предложить то, на что она обычно говорит 'нет'. Шансы растут!",
-            "Хочешь обсудить что-то важное? Сейчас или никогда — через неделю будет поздно",
-            "Она энергичная и весёлая. Предложи свидание, прогулку, приключение",
-            "Это как 'счастливый час' — но вместо скидок у тебя скидка на косяки",
+            "She's in a good mood. Don't know why — don't ask. Just enjoy it",
+            "Perfect time to suggest something she usually says 'no' to. Odds are rising!",
+            "Want to discuss something important? Now or never — in a week it'll be too late",
+            "She's energetic and cheerful. Suggest a date, a walk, an adventure",
+            "It's like 'happy hour' — but instead of discounts, you get a pass on screw-ups",
         ],
         avoid: [
-            "Не сиди в телефоне, когда она хочет общаться. Эти дни на вес золота, бро",
-            "Не трать это окно на очередной вечер с PlayStation. Она же улыбается!",
+            "Don't sit on your phone when she wants to talk. These days are priceless, bro",
+            "Don't waste this window on another PlayStation evening. She's smiling!",
         ],
     },
     ovulation: {
-        name: "Овуляция", color: "#f59e0b", energy: "peak", energyLabel: "PEAK",
-        mood: "Максимальная привлекательность и уверенность. Она — огонь, а ты — мотылёк",
+        name: "Ovulation", color: "#f59e0b", energy: "peak", energyLabel: "PEAK",
+        mood: "Peak attractiveness and confidence. She's fire, and you're the moth",
         tips: [
-            "Она выглядит и чувствует себя богиней. Скажи ей об этом. Вслух. Словами",
-            "Комплименты сейчас заходят как кэшбэк 100% — вкладывай не жалея",
-            "Планируй свидание мечты. Она скажет 'да' на всё. Ну, почти на всё",
-            "Она общительная и сияет? Другие мужики тоже это заметят. Будь рядом, ковбой",
-            "Романтика на максимум. Свечи, ужин, слова. Да, придётся постараться",
+            "She looks and feels like a goddess. Tell her. Out loud. With words",
+            "Compliments land like 100% cashback right now — invest generously",
+            "Plan a dream date. She'll say 'yes' to everything. Well, almost everything",
+            "She's social and glowing? Other guys will notice too. Stay close, cowboy",
+            "Romance on max. Candles, dinner, words. Yes, you'll have to make an effort",
         ],
         avoid: [
-            "Не будь мебелью. Она хочет внимания, а не сожителя с Wi-Fi",
-            "Не ревнуй к каждому, кто на неё посмотрел. Она с тобой. Пока что",
+            "Don't be furniture. She wants attention, not a roommate with Wi-Fi",
+            "Don't get jealous of everyone who looks at her. She's with you. For now",
         ],
     },
     luteal: {
-        name: "Лютеиновая фаза", color: "#8b5cf6", energy: "declining", energyLabel: "DECLINING",
-        mood: "Батарейка садится. Она как телефон на 15% — экономь её ресурсы",
+        name: "Luteal Phase", color: "#8b5cf6", energy: "declining", energyLabel: "DECLINING",
+        mood: "Battery is draining. She's like a phone at 15% — conserve her resources",
         tips: [
-            "Уютный вечер дома > любой вечеринки. Плед, фильм, обнимашки",
-            "Она задумчивая? Не спрашивай 'О чём думаешь?' сто раз. Дай побыть в себе",
-            "Приготовь что-нибудь вкусное. Путь к прощению любых грехов через желудок",
-            "Настроение скачет как курс биткоина. Не пытайся предсказать — просто держись",
-            "Она захочет пересмотреть отношения? Это не всерьёз. Просто кивай и обнимай",
+            "Cozy evening at home > any party. Blanket, movie, cuddles",
+            "She's pensive? Don't ask 'What are you thinking about?' a hundred times. Let her be",
+            "Cook something tasty. The path to forgiveness for any sin goes through the stomach",
+            "Mood swings like Bitcoin. Don't try to predict — just hold on",
+            "She wants to 'reconsider the relationship'? She doesn't mean it. Just nod and hug",
         ],
         avoid: [
-            "Не планируй марафон, поход и встречу с друзьями в один день",
-            "Не спрашивай 'А что на ужин?' — лучше сам свари хотя бы пельмени",
-            "Не спорь по мелочам. Носки на полу — ерунда. Подними и живи дальше",
+            "Don't plan a marathon, a hike, and a meetup with friends all in one day",
+            "Don't ask 'What's for dinner?' — better cook at least some pasta yourself",
+            "Don't argue over small stuff. Socks on the floor — whatever. Pick them up and move on",
         ],
     },
     pms: {
-        name: "ПМС", color: "#f97316", energy: "low", energyLabel: "LOW",
-        mood: "Сегодня ты будешь виноват во всём. Во всех проблемах мира. Просто прими это",
+        name: "PMS", color: "#f97316", energy: "low", energyLabel: "LOW",
+        mood: "Today you'll be blamed for everything. All the world's problems. Just accept it",
         tips: [
-            "Ты не прав. Даже если прав — ты не прав. Запомни это на ближайшие дни",
-            "Она плачет? Обними. Она злится? Обними. Она швыряет подушку? Уклонись, потом обними",
-            "Принеси еду, не спрашивая. Угадай что она хочет. Не угадал? Принеси ещё",
-            "Фраза 'может тебе прилечь?' может стоить тебе жизни. Замени на 'хочешь чай?'",
-            "Её бесит как ты дышишь? Поздравляю, ты нормальный мужик в фазе ПМС",
-            "Помой посуду, пропылесось. Не жди спасибо. Ты герой без плаща",
-            "Дай ей пространство, если просит. Но будь рядом, если не просит. Да, это квест",
+            "You're wrong. Even if you're right — you're wrong. Remember this for the next few days",
+            "She's crying? Hug. She's angry? Hug. She's throwing a pillow? Dodge, then hug",
+            "Bring food without asking. Guess what she wants. Wrong guess? Bring more",
+            "'Maybe you should lie down?' could cost you your life. Replace with 'Want some tea?'",
+            "Your breathing annoys her? Congrats, you're a normal guy in PMS phase",
+            "Do the dishes, vacuum. Don't expect a thank you. You're a hero without a cape",
+            "Give her space if she asks. But be there if she doesn't. Yes, it's a quest",
         ],
         avoid: [
-            "'Это у тебя ПМС' = последние слова в жизни многих смелых мужчин",
-            "'Успокойся' — слово-триггер. Произнесёшь — не вернёшься",
-            "Шутки про гормоны = спать на диване. Минимум. Если повезёт",
-            "Не пытайся 'починить' её настроение логикой. Логика тут не живёт",
-            "'Да ладно, ерунда' = взрыв атомной бомбы",
-            "'У моей мамы такого не было' — ты ведь не настолько глуп, правда?",
+            "'It's just PMS' = the last words of many brave men",
+            "'Calm down' — a trigger word. Say it and you won't return",
+            "Jokes about hormones = sleeping on the couch. At minimum. If you're lucky",
+            "Don't try to 'fix' her mood with logic. Logic doesn't live here",
+            "'Come on, it's nothing' = nuclear explosion",
+            "'My mom never had that' — you're not that stupid, right?",
         ],
     },
 };
 
 const ENERGY_COLORS = { low: '#ef4444', rising: '#10b981', peak: '#f59e0b', declining: '#8b5cf6' };
-const DAY_NAMES_RU = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+const DAY_NAMES = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
 // ════════════════════════════════════════════
 // LOCAL STORAGE
@@ -849,7 +849,7 @@ function getForecast(startDate, cycleLen, periodLen, days) {
         const info = calcPhase(startDate, cycleLen, periodLen, dateStr);
         result.push({
             date: dateStr,
-            dayName: DAY_NAMES_RU[d.getDay()],
+            dayName: DAY_NAMES[d.getDay()],
             ...info,
         });
     }
@@ -899,14 +899,14 @@ function renderDashboard() {
     const partners = data.partners || [];
 
     document.getElementById('target-count').textContent =
-        `${partners.length} ${partners.length === 1 ? 'ЦЕЛЬ' : 'ЦЕЛЕЙ'}`;
+        `${partners.length} ${partners.length === 1 ? 'TARGET' : 'TARGETS'}`;
 
     if (partners.length === 0) {
         content.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">◎</div>
-                <div class="empty-text">НЕТ АКТИВНЫХ ЦЕЛЕЙ<br>Добавь партнёршу для мониторинга</div>
-                <button class="btn-add" onclick="showAddScreen()">[ + ДОБАВИТЬ ЦЕЛЬ ]</button>
+                <div class="empty-text">NO ACTIVE TARGETS<br>Add a partner to start monitoring</div>
+                <button class="btn-add" onclick="showAddScreen()">[ + ADD TARGET ]</button>
             </div>`;
         return;
     }
@@ -928,16 +928,16 @@ function renderDashboard() {
                 </div>
                 <div class="stats-row">
                     <div class="stat">
-                        <div class="stat-label">ДЕНЬ</div>
+                        <div class="stat-label">DAY</div>
                         <div class="stat-value">${s.dayInCycle}/${s.cycleLen}</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-label">ЭНЕРГИЯ</div>
+                        <div class="stat-label">ENERGY</div>
                         <div class="stat-value" style="color:${s.energyColor}">${s.energy}</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-label">СЛЕД. ЦИКЛ</div>
-                        <div class="stat-value">${s.daysUntilNext}д</div>
+                        <div class="stat-label">NEXT CYCLE</div>
+                        <div class="stat-value">${s.daysUntilNext}d</div>
                     </div>
                 </div>
                 <div class="mood-text">${s.mood}</div>
@@ -945,7 +945,7 @@ function renderDashboard() {
         </div>`;
     });
 
-    html += `<div class="btn-add-more" onclick="showAddScreen()">[ + ДОБАВИТЬ ЦЕЛЬ ]</div>`;
+    html += `<div class="btn-add-more" onclick="showAddScreen()">[ + ADD TARGET ]</div>`;
     content.innerHTML = html;
 }
 
@@ -976,8 +976,8 @@ function handleAddPartner() {
     const dateVal = document.getElementById('add-date').value;
     const err = document.getElementById('add-error');
 
-    if (!name) { err.textContent = 'Введи имя цели'; err.classList.add('show'); return; }
-    if (!dateVal) { err.textContent = 'Выбери дату начала цикла'; err.classList.add('show'); return; }
+    if (!name) { err.textContent = 'Enter target name'; err.classList.add('show'); return; }
+    if (!dateVal) { err.textContent = 'Select cycle start date'; err.classList.add('show'); return; }
 
     const data = loadData();
     data.partners.push({
@@ -1023,17 +1023,17 @@ function showDetail(idx) {
             <div class="hud-mood">${s.mood}</div>
             <div class="mini-stats">
                 <div class="mini-stat">
-                    <div class="mini-stat-label">ФАЗА ЕЩЁ</div>
-                    <div class="mini-stat-value">${s.daysLeft}д</div>
+                    <div class="mini-stat-label">PHASE LEFT</div>
+                    <div class="mini-stat-value">${s.daysLeft}d</div>
                 </div>
                 <div class="mini-stat-divider"></div>
                 <div class="mini-stat">
-                    <div class="mini-stat-label">СЛЕД. ЦИКЛ</div>
-                    <div class="mini-stat-value">${s.daysUntilNext}д</div>
+                    <div class="mini-stat-label">NEXT CYCLE</div>
+                    <div class="mini-stat-value">${s.daysUntilNext}d</div>
                 </div>
                 <div class="mini-stat-divider"></div>
                 <div class="mini-stat">
-                    <div class="mini-stat-label">ДАТА</div>
+                    <div class="mini-stat-label">DATE</div>
                     <div class="mini-stat-value">${s.nextPeriodDate.slice(5)}</div>
                 </div>
             </div>
@@ -1041,19 +1041,19 @@ function showDetail(idx) {
     </div>
 
     <div class="section">
-        <div class="section-title">РАЗВЕДДАННЫЕ</div>
+        <div class="section-title">INTEL</div>
         <div class="section-line"></div>
         ${s.tips.map(t => `<div class="tip-row"><span class="tip-bullet">&gt;</span><span class="tip-text">${t}</span></div>`).join('')}
     </div>
 
     <div class="section">
-        <div class="section-title danger">УГРОЗЫ</div>
+        <div class="section-title danger">THREATS</div>
         <div class="section-line danger"></div>
         ${s.avoid.map(a => `<div class="tip-row"><span class="tip-bullet danger">!</span><span class="tip-text muted">${a}</span></div>`).join('')}
     </div>
 
     <div class="section">
-        <div class="section-title">ПРОГНОЗ 14 ДНЕЙ</div>
+        <div class="section-title">14-DAY FORECAST</div>
         <div class="section-line"></div>
         ${forecast.map((day, i) => `<div class="forecast-row ${i===0?'today':''}">
             <span class="forecast-day ${i===0?'today':''}">${day.dayName}</span>
@@ -1065,21 +1065,21 @@ function showDetail(idx) {
     </div>
 
     <div class="section">
-        <div class="section-title" style="color:var(--green)">ВВОД ДАННЫХ</div>
+        <div class="section-title" style="color:var(--green)">DATA INPUT</div>
         <div class="section-line" style="background:var(--green)"></div>
         <div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">
-            Месячные начались раньше или позже прогноза? Введи фактическую дату — прогноз пересчитается.
+            Period started earlier or later than forecast? Enter the actual date — the forecast will recalculate.
         </div>
-        <div class="form-label">ФАКТИЧЕСКОЕ НАЧАЛО МЕСЯЧНЫХ</div>
+        <div class="form-label">ACTUAL PERIOD START</div>
         <input class="form-input" type="date" id="actual-period-date" value="${new Date().toISOString().slice(0,10)}">
         <button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="updatePeriodStart(${idx})">
-            [ ОБНОВИТЬ ЦИКЛ ]
+            [ UPDATE CYCLE ]
         </button>
         <div class="error-msg" id="update-error"></div>
         <div id="update-success" style="display:none;background:rgba(16,185,129,0.1);border:1px solid #065f46;color:var(--green);font-size:12px;padding:10px 14px;border-radius:4px;margin-top:8px;"></div>
     </div>
 
-    <button class="delete-btn" onclick="deletePartner(${idx})">[ УДАЛИТЬ ЦЕЛЬ ]</button>
+    <button class="delete-btn" onclick="deletePartner(${idx})">[ DELETE TARGET ]</button>
     <div class="page-bottom"></div>`;
 }
 
@@ -1090,11 +1090,11 @@ function updatePeriodStart(idx) {
     errEl.classList.remove('show');
     successEl.style.display = 'none';
 
-    if (!dateVal) { errEl.textContent = 'Выбери дату'; errEl.classList.add('show'); return; }
+    if (!dateVal) { errEl.textContent = 'Select a date'; errEl.classList.add('show'); return; }
 
     const inputDate = new Date(dateVal);
     const today = new Date();
-    if (inputDate > today) { errEl.textContent = 'Дата не может быть в будущем'; errEl.classList.add('show'); return; }
+    if (inputDate > today) { errEl.textContent = 'Date cannot be in the future'; errEl.classList.add('show'); return; }
 
     const data = loadData();
     const p = data.partners[idx];
@@ -1108,7 +1108,7 @@ function updatePeriodStart(idx) {
     p.startDate = dateVal;
     saveData(data);
 
-    successEl.textContent = `Цикл обновлён! Новая точка отсчёта: ${dateVal}`;
+    successEl.textContent = `Cycle updated! New reference point: ${dateVal}`;
     successEl.style.display = 'block';
 
     // Re-render detail after short delay so user sees the success message
@@ -1116,7 +1116,7 @@ function updatePeriodStart(idx) {
 }
 
 function deletePartner(idx) {
-    if (!confirm('Удалить эту цель?')) return;
+    if (!confirm('Delete this target?')) return;
     const data = loadData();
     data.partners.splice(idx, 1);
     saveData(data);
@@ -1128,11 +1128,11 @@ function deletePartner(idx) {
 // ════════════════════════════════════════════
 function renderSettings() {
     const data = loadData();
-    document.getElementById('settings-user').textContent = `Позывной: ${data.user || 'N/A'}`;
+    document.getElementById('settings-user').textContent = `Callsign: ${data.user || 'N/A'}`;
 }
 
 function handleReset() {
-    if (!confirm('Удалить все данные? Это необратимо.')) return;
+    if (!confirm('Delete all data? This is irreversible.')) return;
     localStorage.removeItem('cb_data');
     location.reload();
 }
@@ -1170,7 +1170,7 @@ function setLastNotifDate() {
 
 async function toggleNotifications() {
     if (!('Notification' in window)) {
-        alert('Твой браузер не поддерживает уведомления');
+        alert('Your browser does not support notifications');
         return;
     }
 
@@ -1184,10 +1184,9 @@ async function toggleNotifications() {
     if (permission === 'granted') {
         setNotifEnabled(true);
         updateNotifUI();
-        // Send welcome notification
-        sendNotification('CYCLE BUDDY', 'Уведомления активированы. Ежедневный брифинг включён.', 'cb-welcome');
+        sendNotification('CYCLE BUDDY', 'Notifications activated. Daily briefing enabled.', 'cb-welcome');
     } else {
-        alert('Разреши уведомления в настройках браузера');
+        alert('Please allow notifications in your browser settings');
     }
 }
 
@@ -1202,20 +1201,20 @@ function updateNotifUI() {
     const permission = supported ? Notification.permission : 'denied';
 
     if (!supported) {
-        toggle.textContent = 'НЕ ПОДДЕРЖ.';
+        toggle.textContent = 'N/A';
         toggle.style.opacity = '0.5';
         toggle.disabled = true;
-        status.textContent = 'Браузер не поддерживает уведомления';
+        status.textContent = 'Browser does not support notifications';
         testBtn.style.display = 'none';
     } else if (enabled && permission === 'granted') {
-        toggle.textContent = 'ВЫКЛ';
+        toggle.textContent = 'OFF';
         toggle.style.background = 'var(--red)';
-        status.textContent = 'Уведомления включены // ' + (permission === 'granted' ? 'разрешение получено' : 'нужно разрешение');
+        status.textContent = 'Notifications enabled // permission granted';
         testBtn.style.display = 'block';
     } else {
-        toggle.textContent = 'ВКЛ';
+        toggle.textContent = 'ON';
         toggle.style.background = 'var(--cyan)';
-        status.textContent = enabled ? 'Нужно разрешение браузера' : 'Уведомления выключены';
+        status.textContent = enabled ? 'Browser permission needed' : 'Notifications disabled';
         testBtn.style.display = 'none';
     }
 }
@@ -1227,11 +1226,11 @@ function buildDailyBriefing() {
 
     const lines = partners.map(p => {
         const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
-        return `${p.name}: ${s.phaseName} (день ${s.dayInCycle}/${s.cycleLen}) — ${s.energy}`;
+        return `${p.name}: ${s.phaseName} (day ${s.dayInCycle}/${s.cycleLen}) — ${s.energy}`;
     });
 
     return {
-        title: `CYCLE BUDDY // ${new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}`,
+        title: `CYCLE BUDDY // ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`,
         body: lines.join('\n'),
     };
 }
@@ -1268,7 +1267,7 @@ function sendTestNotification() {
     if (briefing) {
         sendNotification(briefing.title, briefing.body, 'cb-test');
     } else {
-        sendNotification('CYCLE BUDDY', 'Нет активных целей для брифинга', 'cb-test');
+        sendNotification('CYCLE BUDDY', 'No active targets for briefing', 'cb-test');
     }
 }
 
