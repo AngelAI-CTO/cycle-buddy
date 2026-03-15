@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI
@@ -8,6 +9,7 @@ from app.database import init_db
 from app.routes import auth, partners
 
 WEBAPP_DIR = Path(__file__).resolve().parent.parent.parent / "webapp"
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*").split(",")
 
 
 @asynccontextmanager
@@ -25,7 +27,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
