@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import base64
 import json
+import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
@@ -10,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.models import User
 
-SECRET_KEY = "CHANGE-ME-in-production-use-env-variable"
+SECRET_KEY = os.environ.get("SECRET_KEY", "CHANGE-ME-in-production-use-env-variable")
 ACCESS_TOKEN_EXPIRE_HOURS = 24 * 30  # 30 days
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
