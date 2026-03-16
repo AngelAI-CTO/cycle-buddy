@@ -3,8 +3,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.database import get_db
-from app.models.models import User, Partner, Cycle
-from app.schemas import PartnerCreate, PartnerUpdate, PartnerOut, CycleCreate, CycleOut
+from app.models.models import User, Partner, Cycle, CycleCorrection
+from app.schemas import (
+    PartnerCreate, PartnerUpdate, PartnerOut,
+    CycleCreate, CycleOut, CycleUpdate, CycleCorrectionOut,
+)
 from app.services.auth_service import get_current_user
 from app.services.cycle_service import calculate_current_phase, get_forecast
 
@@ -144,3 +147,55 @@ async def get_partner_forecast(
         days_ahead=min(days, 60),
     )
     return {"partner_name": partner.name, "forecast": forecast}
+
+
+# --- Cycle corrections ---
+
+@router.patch("/{partner_id}/cycles/{cycle_id}", response_model=CycleOut)
+async def update_cycle(
+    partner_id: int,
+    cycle_id: int,
+    data: CycleUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update a cycle's start date and record the correction."""
+    partner = await _get_partner(partner_id, user, db)
+    result = await db.execute(
+        select(Cycle).where(Cycle.id == cycle_id, Cycle.partner_id == partner.id)
+    )
+    cycle = result.scalar_one_or_none()
+    if not cycle:
+        raise HTTPException(status_code=404, detail="Cycle not found")
+
+    old_date = cycle.start_date
+    if old_date != data.start_date:
+        correction = CycleCorrection(
+            cycle_id=cycle.id,
+            old_start_date=old_date,
+            new_start_date=data.start_date,
+            reason=data.reason,
+        )
+        db.add(correction)
+        cycle.start_date = data.start_date
+        await db.commit()
+        await db.refresh(cycle)
+
+    return cycle
+
+
+@router.get("/{partner_id}/corrections", response_model=list[CycleCorrectionOut])
+async def list_corrections(
+    partner_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get all cycle corrections for a partner, newest first."""
+    partner = await _get_partner(partner_id, user, db)
+    result = await db.execute(
+        select(CycleCorrection)
+        .join(Cycle)
+        .where(Cycle.partner_id == partner.id)
+        .order_by(CycleCorrection.created_at.desc())
+    )
+    return result.scalars().all()

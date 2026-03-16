@@ -37,3 +37,18 @@ class Cycle(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     partner = relationship("Partner", back_populates="cycles")
+    corrections = relationship("CycleCorrection", back_populates="cycle", cascade="all, delete-orphan")
+
+
+class CycleCorrection(Base):
+    """Tracks when a user corrects a cycle start date."""
+    __tablename__ = "cycle_corrections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cycle_id = Column(Integer, ForeignKey("cycles.id"), nullable=False)
+    old_start_date = Column(Date, nullable=False)
+    new_start_date = Column(Date, nullable=False)
+    reason = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    cycle = relationship("Cycle", back_populates="corrections")
