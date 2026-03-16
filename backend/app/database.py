@@ -2,7 +2,7 @@ import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./cycle_buddy.db")
+DATABASE_URL = os.environ.get("DATABASE_URL") or "sqlite+aiosqlite:///./cycle_buddy.db"
 
 # Render.com provides postgres:// but SQLAlchemy needs postgresql+asyncpg://
 if DATABASE_URL.startswith("postgres://"):
