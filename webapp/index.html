@@ -547,8 +547,8 @@
 <body>
     <div class="app" id="app">
 
-        <!-- ═══ WELCOME / FIRST LAUNCH ═══ -->
-        <div class="screen active" id="screen-welcome">
+        <!-- ═══ LOGIN / REGISTER ═══ -->
+        <div class="screen active" id="screen-auth">
             <div class="login-screen">
                 <div class="logo-block">
                     <span class="logo-bracket">[ </span>
@@ -563,15 +563,26 @@
                     Tips, forecasts, survival.
                 </div>
 
-                <div class="form-label">YOUR NAME (CALLSIGN)</div>
-                <input class="form-input" id="welcome-name" placeholder="e.g. Andrew" autocomplete="off">
+                <div class="error-msg" id="auth-error"></div>
 
-                <button class="btn-primary" onclick="handleWelcome()">
-                    [ START MONITORING ]
+                <div class="form-label">CALLSIGN (USERNAME)</div>
+                <input class="form-input" id="auth-username" placeholder="e.g. andrew" autocomplete="username">
+
+                <div class="form-label">PASSWORD</div>
+                <input class="form-input" id="auth-password" type="password" placeholder="min 6 characters" autocomplete="current-password">
+
+                <button class="btn-primary" id="auth-btn" onclick="handleAuth()">
+                    [ LOG IN ]
                 </button>
 
+                <div style="text-align:center;">
+                    <span id="auth-toggle" style="color:var(--cyan-dim);font-size:11px;letter-spacing:1px;cursor:pointer;" onclick="toggleAuthMode()">
+                        No account? REGISTER
+                    </span>
+                </div>
+
                 <div style="color:var(--text-muted);font-size:10px;text-align:center;margin-top:16px;letter-spacing:1px;">
-                    All data is stored only on your device
+                    Data synced across all your devices
                 </div>
             </div>
         </div>
@@ -634,10 +645,10 @@
                     <div class="tip-text" style="color:var(--text-secondary);line-height:1.8;">
                         CYCLE BUDDY — a tactical system for monitoring female cycles.<br><br>
                         Helps men survive, understand, and be better partners.<br><br>
-                        All data is stored locally on your device.
+                        Data synced via secure server.
                     </div>
                     <div style="color:var(--text-muted);font-size:11px;margin-top:16px;letter-spacing:1px;">
-                        v1.0.0 // BUILD 001
+                        v2.0.0 // BUILD 002 // DATABASE
                     </div>
                 </div>
                 <div class="section">
@@ -662,8 +673,8 @@
                     <div class="section-line"></div>
                     <div id="settings-user" style="color:var(--text-secondary);font-size:13px;"></div>
                 </div>
-                <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleReset()">
-                    [ RESET ALL DATA ]
+                <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleLogout()">
+                    [ LOG OUT ]
                 </button>
             </div>
             <div class="page-bottom"></div>
@@ -678,7 +689,7 @@
 
 <script>
 // ════════════════════════════════════════════
-// PHASE DATA — ALL LOGIC RUNS IN BROWSER
+// PHASE DATA
 // ════════════════════════════════════════════
 const PHASES = {
     menstruation: {
@@ -772,20 +783,56 @@ const ENERGY_COLORS = { low: '#ef4444', rising: '#10b981', peak: '#f59e0b', decl
 const DAY_NAMES = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
 // ════════════════════════════════════════════
-// LOCAL STORAGE
+// API CLIENT
 // ════════════════════════════════════════════
-function loadData() {
-    try {
-        return JSON.parse(localStorage.getItem('cb_data')) || { user: null, partners: [] };
-    } catch { return { user: null, partners: [] }; }
+const API_BASE = '/api';
+let authToken = localStorage.getItem('cb_token');
+let currentUsername = localStorage.getItem('cb_username') || '';
+let partnersCache = [];
+
+async function api(method, path, body) {
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+    };
+    if (authToken) {
+        opts.headers['Authorization'] = 'Bearer ' + authToken;
+    }
+    if (body !== undefined) {
+        opts.body = JSON.stringify(body);
+    }
+
+    const resp = await fetch(API_BASE + path, opts);
+
+    if (resp.status === 401) {
+        handleLogout();
+        throw new Error('Session expired');
+    }
+    if (resp.status === 204) return null;
+    if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ detail: 'Request failed' }));
+        throw new Error(err.detail || 'Request failed');
+    }
+    return resp.json();
 }
 
-function saveData(data) {
-    localStorage.setItem('cb_data', JSON.stringify(data));
+function setAuth(token, username) {
+    authToken = token;
+    currentUsername = username;
+    localStorage.setItem('cb_token', token);
+    localStorage.setItem('cb_username', username);
+}
+
+function clearAuth() {
+    authToken = null;
+    currentUsername = '';
+    partnersCache = [];
+    localStorage.removeItem('cb_token');
+    localStorage.removeItem('cb_username');
 }
 
 // ════════════════════════════════════════════
-// CYCLE CALCULATION
+// CYCLE CALCULATION (client-side for speed)
 // ════════════════════════════════════════════
 function calcPhase(startDate, cycleLen, periodLen, targetDate) {
     const start = new Date(startDate);
@@ -847,11 +894,7 @@ function getForecast(startDate, cycleLen, periodLen, days) {
         const d = new Date(today.getTime() + i * 86400000);
         const dateStr = d.toISOString().slice(0, 10);
         const info = calcPhase(startDate, cycleLen, periodLen, dateStr);
-        result.push({
-            date: dateStr,
-            dayName: DAY_NAMES[d.getDay()],
-            ...info,
-        });
+        result.push({ date: dateStr, dayName: DAY_NAMES[d.getDay()], ...info });
     }
     return result;
 }
@@ -864,7 +907,7 @@ let selectedPeriodLength = 5;
 
 function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(`screen-${name}`).classList.add('active');
+    document.getElementById('screen-' + name).classList.add('active');
 
     const nav = document.getElementById('bottom-nav');
     const showNav = ['dashboard', 'settings'].includes(name);
@@ -878,75 +921,141 @@ function showScreen(name) {
 }
 
 // ════════════════════════════════════════════
-// WELCOME
+// AUTH (LOGIN / REGISTER)
 // ════════════════════════════════════════════
-function handleWelcome() {
-    const name = document.getElementById('welcome-name').value.trim();
-    if (!name) { document.getElementById('welcome-name').style.borderColor = 'var(--red)'; return; }
+let authMode = 'login';
 
-    const data = loadData();
-    data.user = name;
-    saveData(data);
-    showScreen('dashboard');
+function toggleAuthMode() {
+    authMode = authMode === 'login' ? 'register' : 'login';
+    const btn = document.getElementById('auth-btn');
+    const toggle = document.getElementById('auth-toggle');
+    document.getElementById('auth-error').classList.remove('show');
+
+    if (authMode === 'register') {
+        btn.textContent = '[ CREATE ACCOUNT ]';
+        toggle.textContent = 'Have an account? LOG IN';
+    } else {
+        btn.textContent = '[ LOG IN ]';
+        toggle.textContent = 'No account? REGISTER';
+    }
+}
+
+async function handleAuth() {
+    const username = document.getElementById('auth-username').value.trim().toLowerCase();
+    const password = document.getElementById('auth-password').value;
+    const err = document.getElementById('auth-error');
+    err.classList.remove('show');
+
+    if (!username || username.length < 3) {
+        err.textContent = 'Username must be at least 3 characters';
+        err.classList.add('show');
+        return;
+    }
+    if (!password || password.length < 6) {
+        err.textContent = 'Password must be at least 6 characters';
+        err.classList.add('show');
+        return;
+    }
+
+    const btn = document.getElementById('auth-btn');
+    btn.disabled = true;
+    btn.textContent = '[ CONNECTING... ]';
+
+    try {
+        const endpoint = authMode === 'register' ? '/auth/register' : '/auth/login';
+        const data = await api('POST', endpoint, { username, password });
+        setAuth(data.access_token, username);
+        showScreen('dashboard');
+    } catch (e) {
+        err.textContent = e.message || 'Connection failed';
+        err.classList.add('show');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = authMode === 'register' ? '[ CREATE ACCOUNT ]' : '[ LOG IN ]';
+    }
+}
+
+function handleLogout() {
+    clearAuth();
+    showScreen('auth');
 }
 
 // ════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════
-function renderDashboard() {
-    const data = loadData();
+async function renderDashboard() {
     const content = document.getElementById('dashboard-content');
-    const partners = data.partners || [];
+    content.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">LOADING...</div>';
 
-    document.getElementById('target-count').textContent =
-        `${partners.length} ${partners.length === 1 ? 'TARGET' : 'TARGETS'}`;
+    try {
+        const partners = await api('GET', '/partners/');
+        const enriched = [];
+        for (const p of partners) {
+            const cycles = await api('GET', '/partners/' + p.id + '/cycles');
+            const lastCycle = cycles.length > 0 ? cycles[0] : null;
+            enriched.push({ ...p, lastCycle, cyclesCount: cycles.length });
+        }
+        partnersCache = enriched;
 
-    if (partners.length === 0) {
-        content.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">◎</div>
-                <div class="empty-text">NO ACTIVE TARGETS<br>Add a partner to start monitoring</div>
-                <button class="btn-add" onclick="showAddScreen()">[ + ADD TARGET ]</button>
-            </div>`;
-        return;
+        document.getElementById('target-count').textContent =
+            enriched.length + ' ' + (enriched.length === 1 ? 'TARGET' : 'TARGETS');
+
+        if (enriched.length === 0) {
+            content.innerHTML =
+                '<div class="empty-state">' +
+                '<div class="empty-icon">◎</div>' +
+                '<div class="empty-text">NO ACTIVE TARGETS<br>Add a partner to start monitoring</div>' +
+                '<button class="btn-add" onclick="showAddScreen()">[ + ADD TARGET ]</button>' +
+                '</div>';
+            return;
+        }
+
+        let html = '';
+        enriched.forEach(function(p, idx) {
+            if (!p.lastCycle) {
+                html +=
+                    '<div class="card" onclick="showDetail(' + idx + ')">' +
+                    '<div class="card-accent" style="background:var(--text-muted)"></div>' +
+                    '<div class="card-body">' +
+                    '<div class="card-header">' +
+                    '<div class="card-name">' + escHtml(p.name.toUpperCase()) + '</div>' +
+                    '<div class="status-badge" style="color:var(--text-muted);border-color:var(--text-muted)">NO DATA</div>' +
+                    '</div>' +
+                    '<div class="mood-text">Add a cycle start date to begin monitoring</div>' +
+                    '</div></div>';
+                return;
+            }
+            var s = calcPhase(p.lastCycle.start_date, p.cycle_length, p.period_length);
+            var pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
+            html +=
+                '<div class="card" onclick="showDetail(' + idx + ')">' +
+                '<div class="card-accent" style="background:' + s.color + '"></div>' +
+                '<div class="card-body">' +
+                '<div class="card-header">' +
+                '<div class="card-name">' + escHtml(p.name.toUpperCase()) + '</div>' +
+                '<div class="status-badge" style="color:' + s.color + ';border-color:' + s.color + '">' +
+                s.phaseName.toUpperCase() + '</div></div>' +
+                '<div class="progress-track"><div class="progress-bar" style="width:' + pct + '%;background:' + s.color + '"></div></div>' +
+                '<div class="stats-row">' +
+                '<div class="stat"><div class="stat-label">DAY</div><div class="stat-value">' + s.dayInCycle + ' / ' + s.cycleLen + '</div></div>' +
+                '<div class="stat"><div class="stat-label">ENERGY</div><div class="stat-value" style="color:' + s.energyColor + '">' + s.energy + '</div></div>' +
+                '<div class="stat"><div class="stat-label">NEXT CYCLE</div><div class="stat-value">' + s.daysUntilNext + 'd</div></div>' +
+                '</div>' +
+                '<div class="mood-text">' + s.mood + '</div>' +
+                '</div></div>';
+        });
+
+        html += '<div class="btn-add-more" onclick="showAddScreen()">[ + ADD TARGET ]</div>';
+        content.innerHTML = html;
+    } catch (e) {
+        content.innerHTML = '<div class="error-msg show">' + escHtml(e.message) + '</div>';
     }
+}
 
-    let html = '';
-    partners.forEach((p, idx) => {
-        const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
-        const pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
-
-        html += `<div class="card" onclick="showDetail(${idx})">
-            <div class="card-accent" style="background:${s.color}"></div>
-            <div class="card-body">
-                <div class="card-header">
-                    <div class="card-name">${p.name.toUpperCase()}</div>
-                    <div class="status-badge" style="border-color:${s.color};color:${s.color}">${s.phaseName.toUpperCase()}</div>
-                </div>
-                <div class="progress-track">
-                    <div class="progress-bar" style="width:${pct}%;background:${s.color}"></div>
-                </div>
-                <div class="stats-row">
-                    <div class="stat">
-                        <div class="stat-label">DAY</div>
-                        <div class="stat-value">${s.dayInCycle}/${s.cycleLen}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">ENERGY</div>
-                        <div class="stat-value" style="color:${s.energyColor}">${s.energy}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">NEXT CYCLE</div>
-                        <div class="stat-value">${s.daysUntilNext}d</div>
-                    </div>
-                </div>
-                <div class="mood-text">${s.mood}</div>
-            </div>
-        </div>`;
-    });
-
-    html += `<div class="btn-add-more" onclick="showAddScreen()">[ + ADD TARGET ]</div>`;
-    content.innerHTML = html;
+function escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
 }
 
 // ════════════════════════════════════════════
@@ -957,230 +1066,245 @@ function showAddScreen() {
     document.getElementById('add-name').value = '';
     document.getElementById('add-date').value = '';
     document.getElementById('add-error').classList.remove('show');
-    selectedCycleLength = 28;
-    selectedPeriodLength = 5;
     renderChips();
 }
 
 function renderChips() {
-    document.getElementById('cycle-chips').innerHTML = [25,26,27,28,29,30,31,32].map(v =>
-        `<div class="chip ${v===selectedCycleLength?'active':''}" onclick="selectedCycleLength=${v};renderChips()">${v}</div>`
-    ).join('');
-    document.getElementById('period-chips').innerHTML = [3,4,5,6,7].map(v =>
-        `<div class="chip ${v===selectedPeriodLength?'active':''}" onclick="selectedPeriodLength=${v};renderChips()">${v}</div>`
-    ).join('');
+    document.getElementById('cycle-chips').innerHTML = [25,26,27,28,29,30,31,32].map(function(v) {
+        return '<div class="chip ' + (v===selectedCycleLength?'active':'') + '" onclick="selectedCycleLength=' + v + ';renderChips()">' + v + '</div>';
+    }).join('');
+    document.getElementById('period-chips').innerHTML = [3,4,5,6,7].map(function(v) {
+        return '<div class="chip ' + (v===selectedPeriodLength?'active':'') + '" onclick="selectedPeriodLength=' + v + ';renderChips()">' + v + '</div>';
+    }).join('');
 }
 
-function handleAddPartner() {
-    const name = document.getElementById('add-name').value.trim();
-    const dateVal = document.getElementById('add-date').value;
-    const err = document.getElementById('add-error');
+async function handleAddPartner() {
+    var name = document.getElementById('add-name').value.trim();
+    var dateVal = document.getElementById('add-date').value;
+    var err = document.getElementById('add-error');
+    err.classList.remove('show');
 
     if (!name) { err.textContent = 'Enter target name'; err.classList.add('show'); return; }
     if (!dateVal) { err.textContent = 'Select cycle start date'; err.classList.add('show'); return; }
 
-    const data = loadData();
-    data.partners.push({
-        name,
-        startDate: dateVal,
-        cycleLen: selectedCycleLength,
-        periodLen: selectedPeriodLength,
-    });
-    saveData(data);
-    showScreen('dashboard');
+    try {
+        var partner = await api('POST', '/partners/', {
+            name: name,
+            cycle_length: selectedCycleLength,
+            period_length: selectedPeriodLength,
+        });
+        await api('POST', '/partners/' + partner.id + '/cycles', { start_date: dateVal });
+        showScreen('dashboard');
+    } catch (e) {
+        err.textContent = e.message;
+        err.classList.add('show');
+    }
 }
 
 // ════════════════════════════════════════════
 // DETAIL
 // ════════════════════════════════════════════
-function showDetail(idx) {
+async function showDetail(idx) {
     showScreen('detail');
-    const data = loadData();
-    const p = data.partners[idx];
+    var content = document.getElementById('detail-content');
+    content.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">LOADING...</div>';
+
+    var p = partnersCache[idx];
     if (!p) return;
 
-    const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
-    const forecast = getForecast(p.startDate, p.cycleLen, p.periodLen, 14);
-    const pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
-    const content = document.getElementById('detail-content');
+    if (!p.lastCycle) {
+        content.innerHTML =
+            '<div class="section">' +
+            '<div class="section-title">NO CYCLE DATA</div>' +
+            '<div class="section-line"></div>' +
+            '<div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">Add the first period start date to begin monitoring.</div>' +
+            '<div class="form-label">PERIOD START DATE</div>' +
+            '<input class="form-input" type="date" id="first-cycle-date" value="' + new Date().toISOString().slice(0,10) + '">' +
+            '<button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="addFirstCycle(' + idx + ')">[ ADD CYCLE ]</button>' +
+            '<div class="error-msg" id="first-cycle-error"></div>' +
+            '</div>' +
+            '<button class="delete-btn" onclick="deletePartner(' + idx + ')">[ DELETE TARGET ]</button>' +
+            '<div class="page-bottom"></div>';
+        return;
+    }
 
-    content.innerHTML = `
-    <div class="hud-card">
-        <div class="hud-accent" style="background:${s.color}"></div>
-        <div class="hud-body">
-            <div class="target-name">${p.name.toUpperCase()}</div>
-            <div class="phase-row">
-                <div class="phase-dot" style="background:${s.color}"></div>
-                <div class="phase-name" style="color:${s.color}">${s.phaseName.toUpperCase()}</div>
-            </div>
-            <div class="big-day">
-                <span class="big-day-number">${s.dayInCycle}</span>
-                <span class="big-day-total">/ ${s.cycleLen}</span>
-            </div>
-            <div class="progress-track">
-                <div class="progress-bar" style="width:${pct}%;background:${s.color}"></div>
-            </div>
-            <div class="hud-mood">${s.mood}</div>
-            <div class="mini-stats">
-                <div class="mini-stat">
-                    <div class="mini-stat-label">PHASE LEFT</div>
-                    <div class="mini-stat-value">${s.daysLeft}d</div>
-                </div>
-                <div class="mini-stat-divider"></div>
-                <div class="mini-stat">
-                    <div class="mini-stat-label">NEXT CYCLE</div>
-                    <div class="mini-stat-value">${s.daysUntilNext}d</div>
-                </div>
-                <div class="mini-stat-divider"></div>
-                <div class="mini-stat">
-                    <div class="mini-stat-label">DATE</div>
-                    <div class="mini-stat-value">${s.nextPeriodDate.slice(5)}</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    var s = calcPhase(p.lastCycle.start_date, p.cycle_length, p.period_length);
+    var forecast = getForecast(p.lastCycle.start_date, p.cycle_length, p.period_length, 14);
+    var pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
 
-    <div class="section">
-        <div class="section-title">INTEL</div>
-        <div class="section-line"></div>
-        ${s.tips.map(t => `<div class="tip-row"><span class="tip-bullet">&gt;</span><span class="tip-text">${t}</span></div>`).join('')}
-    </div>
+    // Load correction history
+    var correctionsHtml = '';
+    try {
+        var corrections = await api('GET', '/partners/' + p.id + '/corrections');
+        if (corrections.length > 0) {
+            correctionsHtml = '<div class="section">' +
+                '<div class="section-title" style="color:var(--violet)">CYCLE HISTORY</div>' +
+                '<div class="section-line" style="background:var(--violet)"></div>';
+            corrections.forEach(function(c) {
+                correctionsHtml +=
+                    '<div class="forecast-row">' +
+                    '<span class="forecast-date" style="width:80px;">' + c.created_at.slice(0,10) + '</span>' +
+                    '<span style="color:var(--red);font-size:11px;">' + c.old_start_date + '</span>' +
+                    '<span style="color:var(--text-muted);font-size:11px;margin:0 4px;">→</span>' +
+                    '<span style="color:var(--green);font-size:11px;">' + c.new_start_date + '</span>' +
+                    '</div>';
+            });
+            correctionsHtml += '</div>';
+        }
+    } catch (e) { /* corrections are optional */ }
 
-    <div class="section">
-        <div class="section-title danger">THREATS</div>
-        <div class="section-line danger"></div>
-        ${s.avoid.map(a => `<div class="tip-row"><span class="tip-bullet danger">!</span><span class="tip-text muted">${a}</span></div>`).join('')}
-    </div>
+    var tipsHtml = s.tips.map(function(t) {
+        return '<div class="tip-row"><span class="tip-bullet">&gt;</span><span class="tip-text">' + t + '</span></div>';
+    }).join('');
 
-    <div class="section">
-        <div class="section-title">14-DAY FORECAST</div>
-        <div class="section-line"></div>
-        ${forecast.map((day, i) => `<div class="forecast-row ${i===0?'today':''}">
-            <span class="forecast-day ${i===0?'today':''}">${day.dayName}</span>
-            <span class="forecast-date">${day.date.slice(5)}</span>
-            <span class="forecast-dot" style="background:${day.color}"></span>
-            <span class="forecast-phase" style="color:${day.color}">${day.phaseName}</span>
-            <span class="forecast-energy">${day.energy}</span>
-        </div>`).join('')}
-    </div>
+    var avoidHtml = s.avoid.map(function(a) {
+        return '<div class="tip-row"><span class="tip-bullet danger">!</span><span class="tip-text muted">' + a + '</span></div>';
+    }).join('');
 
-    <div class="section">
-        <div class="section-title" style="color:var(--green)">DATA INPUT</div>
-        <div class="section-line" style="background:var(--green)"></div>
-        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">
-            Period started earlier or later than forecast? Enter the actual date — the forecast will recalculate.
-        </div>
-        <div class="form-label">ACTUAL PERIOD START</div>
-        <input class="form-input" type="date" id="actual-period-date" value="${new Date().toISOString().slice(0,10)}">
-        <button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="updatePeriodStart(${idx})">
-            [ UPDATE CYCLE ]
-        </button>
-        <div class="error-msg" id="update-error"></div>
-        <div id="update-success" style="display:none;background:rgba(16,185,129,0.1);border:1px solid #065f46;color:var(--green);font-size:12px;padding:10px 14px;border-radius:4px;margin-top:8px;"></div>
-    </div>
+    var forecastHtml = forecast.map(function(day, i) {
+        return '<div class="forecast-row ' + (i===0?'today':'') + '">' +
+            '<span class="forecast-day ' + (i===0?'today':'') + '">' + day.dayName + '</span>' +
+            '<span class="forecast-date">' + day.date.slice(5) + '</span>' +
+            '<span class="forecast-dot" style="background:' + day.color + '"></span>' +
+            '<span class="forecast-phase" style="color:' + day.color + '">' + day.phaseName + '</span>' +
+            '<span class="forecast-energy">' + day.energy + '</span>' +
+            '</div>';
+    }).join('');
 
-    <button class="delete-btn" onclick="deletePartner(${idx})">[ DELETE TARGET ]</button>
-    <div class="page-bottom"></div>`;
+    content.innerHTML =
+        '<div class="hud-card">' +
+        '<div class="hud-accent" style="background:' + s.color + '"></div>' +
+        '<div class="hud-body">' +
+        '<div class="target-name">' + escHtml(p.name.toUpperCase()) + '</div>' +
+        '<div class="phase-row">' +
+        '<div class="phase-dot" style="background:' + s.color + '"></div>' +
+        '<div class="phase-name" style="color:' + s.color + '">' + s.phaseName.toUpperCase() + '</div>' +
+        '</div>' +
+        '<div class="big-day"><span class="big-day-number">' + s.dayInCycle + '</span><span class="big-day-total">/ ' + s.cycleLen + '</span></div>' +
+        '<div class="progress-track"><div class="progress-bar" style="width:' + pct + '%;background:' + s.color + '"></div></div>' +
+        '<div class="hud-mood">' + s.mood + '</div>' +
+        '<div class="mini-stats">' +
+        '<div class="mini-stat"><div class="mini-stat-label">PHASE LEFT</div><div class="mini-stat-value">' + s.daysLeft + 'd</div></div>' +
+        '<div class="mini-stat-divider"></div>' +
+        '<div class="mini-stat"><div class="mini-stat-label">NEXT CYCLE</div><div class="mini-stat-value">' + s.daysUntilNext + 'd</div></div>' +
+        '<div class="mini-stat-divider"></div>' +
+        '<div class="mini-stat"><div class="mini-stat-label">DATE</div><div class="mini-stat-value">' + s.nextPeriodDate.slice(5) + '</div></div>' +
+        '</div></div></div>' +
+
+        '<div class="section"><div class="section-title">INTEL</div><div class="section-line"></div>' + tipsHtml + '</div>' +
+
+        '<div class="section"><div class="section-title danger">THREATS</div><div class="section-line danger"></div>' + avoidHtml + '</div>' +
+
+        '<div class="section"><div class="section-title">14-DAY FORECAST</div><div class="section-line"></div>' + forecastHtml + '</div>' +
+
+        '<div class="section">' +
+        '<div class="section-title" style="color:var(--green)">DATA INPUT</div>' +
+        '<div class="section-line" style="background:var(--green)"></div>' +
+        '<div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">Period started earlier or later than forecast? Enter the actual date — the forecast will recalculate.</div>' +
+        '<div class="form-label">ACTUAL PERIOD START</div>' +
+        '<input class="form-input" type="date" id="actual-period-date" value="' + new Date().toISOString().slice(0,10) + '">' +
+        '<button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="updatePeriodStart(' + idx + ')">[ UPDATE CYCLE ]</button>' +
+        '<div class="error-msg" id="update-error"></div>' +
+        '<div id="update-success" style="display:none;background:rgba(16,185,129,0.1);border:1px solid #065f46;color:var(--green);font-size:12px;padding:10px 14px;border-radius:4px;margin-top:8px;"></div>' +
+        '</div>' +
+
+        correctionsHtml +
+
+        '<button class="delete-btn" onclick="deletePartner(' + idx + ')">[ DELETE TARGET ]</button>' +
+        '<div class="page-bottom"></div>';
 }
 
-function updatePeriodStart(idx) {
-    const dateVal = document.getElementById('actual-period-date').value;
-    const errEl = document.getElementById('update-error');
-    const successEl = document.getElementById('update-success');
+async function addFirstCycle(idx) {
+    var p = partnersCache[idx];
+    var dateVal = document.getElementById('first-cycle-date').value;
+    var err = document.getElementById('first-cycle-error');
+    if (!dateVal) { err.textContent = 'Select a date'; err.classList.add('show'); return; }
+
+    try {
+        await api('POST', '/partners/' + p.id + '/cycles', { start_date: dateVal });
+        showScreen('dashboard');
+    } catch (e) {
+        err.textContent = e.message;
+        err.classList.add('show');
+    }
+}
+
+async function updatePeriodStart(idx) {
+    var dateVal = document.getElementById('actual-period-date').value;
+    var errEl = document.getElementById('update-error');
+    var successEl = document.getElementById('update-success');
     errEl.classList.remove('show');
     successEl.style.display = 'none';
 
     if (!dateVal) { errEl.textContent = 'Select a date'; errEl.classList.add('show'); return; }
 
-    const inputDate = new Date(dateVal);
-    const today = new Date();
+    var inputDate = new Date(dateVal);
+    var today = new Date();
     if (inputDate > today) { errEl.textContent = 'Date cannot be in the future'; errEl.classList.add('show'); return; }
 
-    const data = loadData();
-    const p = data.partners[idx];
-    if (!p) return;
+    var p = partnersCache[idx];
+    if (!p || !p.lastCycle) return;
 
-    // Save history of previous start dates
-    if (!p.history) p.history = [];
-    p.history.push({ prevStart: p.startDate, updatedAt: new Date().toISOString() });
+    try {
+        await api('PATCH', '/partners/' + p.id + '/cycles/' + p.lastCycle.id, {
+            start_date: dateVal,
+            reason: 'Manual correction',
+        });
 
-    // Update to new actual period start
-    p.startDate = dateVal;
-    saveData(data);
-
-    successEl.textContent = `Cycle updated! New reference point: ${dateVal}`;
-    successEl.style.display = 'block';
-
-    // Re-render detail after short delay so user sees the success message
-    setTimeout(() => showDetail(idx), 1200);
+        successEl.textContent = 'Cycle updated! New reference point: ' + dateVal;
+        successEl.style.display = 'block';
+        setTimeout(function() { showDetail(idx); }, 1200);
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.add('show');
+    }
 }
 
-function deletePartner(idx) {
+async function deletePartner(idx) {
     if (!confirm('Delete this target?')) return;
-    const data = loadData();
-    data.partners.splice(idx, 1);
-    saveData(data);
-    showScreen('dashboard');
+    var p = partnersCache[idx];
+    if (!p) return;
+
+    try {
+        await api('DELETE', '/partners/' + p.id);
+        showScreen('dashboard');
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
 }
 
 // ════════════════════════════════════════════
 // SETTINGS
 // ════════════════════════════════════════════
 function renderSettings() {
-    const data = loadData();
-    document.getElementById('settings-user').textContent = `Callsign: ${data.user || 'N/A'}`;
-}
-
-function handleReset() {
-    if (!confirm('Delete all data? This is irreversible.')) return;
-    localStorage.removeItem('cb_data');
-    location.reload();
+    document.getElementById('settings-user').textContent = 'Callsign: ' + (currentUsername || 'N/A');
 }
 
 // ════════════════════════════════════════════
 // NOTIFICATIONS & PWA
 // ════════════════════════════════════════════
-let swRegistration = null;
+var swRegistration = null;
 
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(reg => {
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
             swRegistration = reg;
             updateNotifUI();
             checkDailyNotification();
-        }).catch(err => console.log('SW registration failed:', err));
+        }).catch(function(err) { console.log('SW registration failed:', err); });
     }
 }
 
-function getNotifEnabled() {
-    return localStorage.getItem('cb_notif') === 'on';
-}
-
-function setNotifEnabled(val) {
-    localStorage.setItem('cb_notif', val ? 'on' : 'off');
-}
-
-function getLastNotifDate() {
-    return localStorage.getItem('cb_last_notif');
-}
-
-function setLastNotifDate() {
-    localStorage.setItem('cb_last_notif', new Date().toISOString().slice(0, 10));
-}
+function getNotifEnabled() { return localStorage.getItem('cb_notif') === 'on'; }
+function setNotifEnabled(val) { localStorage.setItem('cb_notif', val ? 'on' : 'off'); }
+function getLastNotifDate() { return localStorage.getItem('cb_last_notif'); }
+function setLastNotifDate() { localStorage.setItem('cb_last_notif', new Date().toISOString().slice(0, 10)); }
 
 async function toggleNotifications() {
-    if (!('Notification' in window)) {
-        alert('Your browser does not support notifications');
-        return;
-    }
+    if (!('Notification' in window)) { alert('Your browser does not support notifications'); return; }
+    if (getNotifEnabled()) { setNotifEnabled(false); updateNotifUI(); return; }
 
-    if (getNotifEnabled()) {
-        setNotifEnabled(false);
-        updateNotifUI();
-        return;
-    }
-
-    const permission = await Notification.requestPermission();
+    var permission = await Notification.requestPermission();
     if (permission === 'granted') {
         setNotifEnabled(true);
         updateNotifUI();
@@ -1191,14 +1315,14 @@ async function toggleNotifications() {
 }
 
 function updateNotifUI() {
-    const toggle = document.getElementById('notif-toggle');
-    const status = document.getElementById('notif-status');
-    const testBtn = document.getElementById('notif-test');
+    var toggle = document.getElementById('notif-toggle');
+    var status = document.getElementById('notif-status');
+    var testBtn = document.getElementById('notif-test');
     if (!toggle) return;
 
-    const supported = 'Notification' in window;
-    const enabled = getNotifEnabled();
-    const permission = supported ? Notification.permission : 'denied';
+    var supported = 'Notification' in window;
+    var enabled = getNotifEnabled();
+    var permission = supported ? Notification.permission : 'denied';
 
     if (!supported) {
         toggle.textContent = 'N/A';
@@ -1220,70 +1344,52 @@ function updateNotifUI() {
 }
 
 function buildDailyBriefing() {
-    const data = loadData();
-    const partners = data.partners || [];
-    if (partners.length === 0) return null;
-
-    const lines = partners.map(p => {
-        const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
-        return `${p.name}: ${s.phaseName} (day ${s.dayInCycle}/${s.cycleLen}) — ${s.energy}`;
+    if (partnersCache.length === 0) return null;
+    var lines = partnersCache.filter(function(p) { return p.lastCycle; }).map(function(p) {
+        var s = calcPhase(p.lastCycle.start_date, p.cycle_length, p.period_length);
+        return p.name + ': ' + s.phaseName + ' (day ' + s.dayInCycle + '/' + s.cycleLen + ') — ' + s.energy;
     });
-
+    if (lines.length === 0) return null;
     return {
-        title: `CYCLE BUDDY // ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`,
+        title: 'CYCLE BUDDY // ' + new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
         body: lines.join('\n'),
     };
 }
 
 function sendNotification(title, body, tag) {
     if (swRegistration) {
-        swRegistration.showNotification(title, {
-            body,
-            tag: tag || 'cb-' + Date.now(),
-            vibrate: [200, 100, 200],
-            requireInteraction: false,
-        });
+        swRegistration.showNotification(title, { body: body, tag: tag || 'cb-' + Date.now(), vibrate: [200, 100, 200], requireInteraction: false });
     } else if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body, tag: tag || 'cb-' + Date.now() });
+        new Notification(title, { body: body, tag: tag || 'cb-' + Date.now() });
     }
 }
 
 function checkDailyNotification() {
     if (!getNotifEnabled()) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-
-    const today = new Date().toISOString().slice(0, 10);
+    var today = new Date().toISOString().slice(0, 10);
     if (getLastNotifDate() === today) return;
-
-    const briefing = buildDailyBriefing();
+    var briefing = buildDailyBriefing();
     if (!briefing) return;
-
     sendNotification(briefing.title, briefing.body, 'cb-daily-' + today);
     setLastNotifDate();
 }
 
 function sendTestNotification() {
-    const briefing = buildDailyBriefing();
-    if (briefing) {
-        sendNotification(briefing.title, briefing.body, 'cb-test');
-    } else {
-        sendNotification('CYCLE BUDDY', 'No active targets for briefing', 'cb-test');
-    }
+    var briefing = buildDailyBriefing();
+    if (briefing) { sendNotification(briefing.title, briefing.body, 'cb-test'); }
+    else { sendNotification('CYCLE BUDDY', 'No active targets for briefing', 'cb-test'); }
 }
 
-// Schedule periodic check (every 6 hours while app is open)
-setInterval(() => {
-    checkDailyNotification();
-}, 6 * 60 * 60 * 1000);
+setInterval(function() { checkDailyNotification(); }, 6 * 60 * 60 * 1000);
 
 // ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
-const initData = loadData();
-if (initData.user) {
+if (authToken) {
     showScreen('dashboard');
 } else {
-    showScreen('welcome');
+    showScreen('auth');
 }
 
 initServiceWorker();

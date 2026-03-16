@@ -42,11 +42,19 @@ async def health():
     return {"status": "ok", "app": "Cycle Buddy"}
 
 
-# Serve web app
+# Serve web app static files (manifest, sw, etc.)
+if WEBAPP_DIR.exists():
+    @app.get("/manifest.json")
+    async def serve_manifest():
+        return FileResponse(WEBAPP_DIR / "manifest.json")
+
+    @app.get("/sw.js")
+    async def serve_sw():
+        return FileResponse(WEBAPP_DIR / "sw.js", media_type="application/javascript")
+
+    app.mount("/static", StaticFiles(directory=str(WEBAPP_DIR)), name="static")
+
+
 @app.get("/")
 async def serve_webapp():
     return FileResponse(WEBAPP_DIR / "index.html")
-
-
-if WEBAPP_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(WEBAPP_DIR)), name="static")
