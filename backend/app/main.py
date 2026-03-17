@@ -1,14 +1,18 @@
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.database import init_db
 from app.routes import auth, partners
 
 WEBAPP_DIR = Path(__file__).resolve().parent.parent.parent / "webapp"
+
+# CORS: use CORS_ORIGINS env var in production, e.g. "https://cycle-buddy.up.railway.app"
 CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*").split(",")
 
 
@@ -24,6 +28,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Rate limiter
+app.state.limiter = auth.limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
