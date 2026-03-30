@@ -47,4 +47,4 @@ async def serve_webapp():
 
 
 if WEBAPP_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(WEBAPP_DIR)), name="static")
+    app.mount("/", StaticFiles(directory=str(WEBAPP_DIR), html=True), name="webapp")
