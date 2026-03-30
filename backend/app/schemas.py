@@ -51,19 +51,3 @@ class CycleOut(BaseModel):
     partner_id: int
 
     model_config = {"from_attributes": True}
-
-
-class CycleUpdate(BaseModel):
-    start_date: date
-    reason: str | None = None
-
-
-class CycleCorrectionOut(BaseModel):
-    id: int
-    cycle_id: int
-    old_start_date: date
-    new_start_date: date
-    reason: str | None
-    created_at: str
-
-    model_config = {"from_attributes": True}

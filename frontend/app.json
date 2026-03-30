@@ -7,20 +7,14 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
       "backgroundColor": "#1a1a2e"
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.cyclebuddy.app",
-      "infoPlist": {
-        "NSCalendarsUsageDescription": "Cycle Buddy needs calendar access to set reminders"
-      }
+      "bundleIdentifier": "com.cyclebuddy.app"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
       "package": "com.cyclebuddy.app"
@@ -28,9 +22,6 @@
     "plugins": [
       "expo-notifications",
       "expo-secure-store"
-    ],
-    "extra": {
-      "apiUrl": "https://cycle-buddy-production.up.railway.app/api"
-    }
+    ]
   }
 }

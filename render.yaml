@@ -1,5 +1,0 @@
-services:
-  - type: web
-    name: cycle-buddy
-    runtime: image
-    healthCheckPath: /api/health

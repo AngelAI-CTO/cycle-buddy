@@ -542,13 +542,194 @@
         }
 
         .delete-btn:hover { background: rgba(239,68,68,0.1); }
+
+        /* ═══ SIGNAL INPUT ═══ */
+        .signal-section {
+            background: var(--surface);
+            border: 1px solid var(--amber);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .signal-mood-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .mood-chip {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .mood-chip.active {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .mood-chip:hover:not(.active) { border-color: var(--text-muted); }
+
+        .mood-chip-icon { font-size: 18px; display: block; margin-bottom: 2px; }
+
+        .signal-textarea {
+            width: 100%;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            outline: none;
+            resize: vertical;
+            min-height: 60px;
+            transition: border-color 0.2s;
+        }
+
+        .signal-textarea:focus {
+            border-color: var(--amber);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+        }
+
+        .signal-textarea::placeholder { color: var(--text-muted); }
+
+        .signal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .signal-btn {
+            flex: 1;
+            background: var(--amber);
+            color: var(--bg);
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .signal-btn:hover { box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+
+        .mic-btn {
+            width: 44px;
+            flex-shrink: 0;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mic-btn.recording {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(239, 68, 68, 0.1);
+            animation: pulse-mic 1s infinite;
+        }
+
+        @keyframes pulse-mic {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        }
+
+        .signal-success {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            font-size: 11px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-top: 8px;
+            display: none;
+            letter-spacing: 1px;
+        }
+
+        /* ═══ SIGNAL LOG ═══ */
+        .signal-log-item {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+        }
+
+        .signal-log-item:last-child { border-bottom: none; }
+
+        .signal-log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .signal-log-date {
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .signal-log-phase {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 2px 6px;
+            border: 1px solid;
+            border-radius: 2px;
+        }
+
+        .signal-log-moods {
+            font-size: 11px;
+            color: var(--amber);
+            margin-bottom: 4px;
+        }
+
+        .signal-log-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .signal-log-empty {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-align: center;
+            padding: 16px 0;
+            letter-spacing: 1px;
+        }
+
+        .adaptive-badge {
+            display: inline-block;
+            font-size: 8px;
+            color: var(--amber);
+            border: 1px solid var(--amber);
+            padding: 1px 5px;
+            border-radius: 2px;
+            margin-left: 6px;
+            letter-spacing: 1px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
     <div class="app" id="app">
 
-        <!-- ═══ LOGIN / REGISTER ═══ -->
-        <div class="screen active" id="screen-auth">
+        <!-- ═══ WELCOME / FIRST LAUNCH ═══ -->
+        <div class="screen active" id="screen-welcome">
             <div class="login-screen">
                 <div class="logo-block">
                     <span class="logo-bracket">[ </span>
@@ -563,26 +744,15 @@
                     Tips, forecasts, survival.
                 </div>
 
-                <div class="error-msg" id="auth-error"></div>
+                <div class="form-label">YOUR NAME (CALLSIGN)</div>
+                <input class="form-input" id="welcome-name" placeholder="e.g. Andrew" autocomplete="off">
 
-                <div class="form-label">CALLSIGN (USERNAME)</div>
-                <input class="form-input" id="auth-username" placeholder="e.g. andrew" autocomplete="username">
-
-                <div class="form-label">PASSWORD</div>
-                <input class="form-input" id="auth-password" type="password" placeholder="min 6 characters" autocomplete="current-password">
-
-                <button class="btn-primary" id="auth-btn" onclick="handleAuth()">
-                    [ LOG IN ]
+                <button class="btn-primary" onclick="handleWelcome()">
+                    [ START MONITORING ]
                 </button>
 
-                <div style="text-align:center;">
-                    <span id="auth-toggle" style="color:var(--cyan-dim);font-size:11px;letter-spacing:1px;cursor:pointer;" onclick="toggleAuthMode()">
-                        No account? REGISTER
-                    </span>
-                </div>
-
                 <div style="color:var(--text-muted);font-size:10px;text-align:center;margin-top:16px;letter-spacing:1px;">
-                    Data synced across all your devices
+                    All data is stored only on your device
                 </div>
             </div>
         </div>
@@ -645,10 +815,10 @@
                     <div class="tip-text" style="color:var(--text-secondary);line-height:1.8;">
                         CYCLE BUDDY — a tactical system for monitoring female cycles.<br><br>
                         Helps men survive, understand, and be better partners.<br><br>
-                        Data synced via secure server.
+                        All data is stored locally on your device.
                     </div>
                     <div style="color:var(--text-muted);font-size:11px;margin-top:16px;letter-spacing:1px;">
-                        v2.0.0 // BUILD 002 // DATABASE
+                        v1.0.0 // BUILD 001
                     </div>
                 </div>
                 <div class="section">
@@ -673,8 +843,8 @@
                     <div class="section-line"></div>
                     <div id="settings-user" style="color:var(--text-secondary);font-size:13px;"></div>
                 </div>
-                <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleLogout()">
-                    [ LOG OUT ]
+                <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleReset()">
+                    [ RESET ALL DATA ]
                 </button>
             </div>
             <div class="page-bottom"></div>
@@ -689,7 +859,7 @@
 
 <script>
 // ════════════════════════════════════════════
-// PHASE DATA
+// PHASE DATA — ALL LOGIC RUNS IN BROWSER
 // ════════════════════════════════════════════
 const PHASES = {
     menstruation: {
@@ -783,56 +953,20 @@ const ENERGY_COLORS = { low: '#ef4444', rising: '#10b981', peak: '#f59e0b', decl
 const DAY_NAMES = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 
 // ════════════════════════════════════════════
-// API CLIENT
+// LOCAL STORAGE
 // ════════════════════════════════════════════
-const API_BASE = '/api';
-let authToken = localStorage.getItem('cb_token');
-let currentUsername = localStorage.getItem('cb_username') || '';
-let partnersCache = [];
-
-async function api(method, path, body) {
-    const opts = {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-    };
-    if (authToken) {
-        opts.headers['Authorization'] = 'Bearer ' + authToken;
-    }
-    if (body !== undefined) {
-        opts.body = JSON.stringify(body);
-    }
-
-    const resp = await fetch(API_BASE + path, opts);
-
-    if (resp.status === 401) {
-        handleLogout();
-        throw new Error('Session expired');
-    }
-    if (resp.status === 204) return null;
-    if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ detail: 'Request failed' }));
-        throw new Error(err.detail || 'Request failed');
-    }
-    return resp.json();
+function loadData() {
+    try {
+        return JSON.parse(localStorage.getItem('cb_data')) || { user: null, partners: [] };
+    } catch { return { user: null, partners: [] }; }
 }
 
-function setAuth(token, username) {
-    authToken = token;
-    currentUsername = username;
-    localStorage.setItem('cb_token', token);
-    localStorage.setItem('cb_username', username);
-}
-
-function clearAuth() {
-    authToken = null;
-    currentUsername = '';
-    partnersCache = [];
-    localStorage.removeItem('cb_token');
-    localStorage.removeItem('cb_username');
+function saveData(data) {
+    localStorage.setItem('cb_data', JSON.stringify(data));
 }
 
 // ════════════════════════════════════════════
-// CYCLE CALCULATION (client-side for speed)
+// CYCLE CALCULATION
 // ════════════════════════════════════════════
 function calcPhase(startDate, cycleLen, periodLen, targetDate) {
     const start = new Date(startDate);
@@ -894,7 +1028,11 @@ function getForecast(startDate, cycleLen, periodLen, days) {
         const d = new Date(today.getTime() + i * 86400000);
         const dateStr = d.toISOString().slice(0, 10);
         const info = calcPhase(startDate, cycleLen, periodLen, dateStr);
-        result.push({ date: dateStr, dayName: DAY_NAMES[d.getDay()], ...info });
+        result.push({
+            date: dateStr,
+            dayName: DAY_NAMES[d.getDay()],
+            ...info,
+        });
     }
     return result;
 }
@@ -907,7 +1045,7 @@ let selectedPeriodLength = 5;
 
 function showScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + name).classList.add('active');
+    document.getElementById(`screen-${name}`).classList.add('active');
 
     const nav = document.getElementById('bottom-nav');
     const showNav = ['dashboard', 'settings'].includes(name);
@@ -921,141 +1059,75 @@ function showScreen(name) {
 }
 
 // ════════════════════════════════════════════
-// AUTH (LOGIN / REGISTER)
+// WELCOME
 // ════════════════════════════════════════════
-let authMode = 'login';
+function handleWelcome() {
+    const name = document.getElementById('welcome-name').value.trim();
+    if (!name) { document.getElementById('welcome-name').style.borderColor = 'var(--red)'; return; }
 
-function toggleAuthMode() {
-    authMode = authMode === 'login' ? 'register' : 'login';
-    const btn = document.getElementById('auth-btn');
-    const toggle = document.getElementById('auth-toggle');
-    document.getElementById('auth-error').classList.remove('show');
-
-    if (authMode === 'register') {
-        btn.textContent = '[ CREATE ACCOUNT ]';
-        toggle.textContent = 'Have an account? LOG IN';
-    } else {
-        btn.textContent = '[ LOG IN ]';
-        toggle.textContent = 'No account? REGISTER';
-    }
-}
-
-async function handleAuth() {
-    const username = document.getElementById('auth-username').value.trim().toLowerCase();
-    const password = document.getElementById('auth-password').value;
-    const err = document.getElementById('auth-error');
-    err.classList.remove('show');
-
-    if (!username || username.length < 3) {
-        err.textContent = 'Username must be at least 3 characters';
-        err.classList.add('show');
-        return;
-    }
-    if (!password || password.length < 6) {
-        err.textContent = 'Password must be at least 6 characters';
-        err.classList.add('show');
-        return;
-    }
-
-    const btn = document.getElementById('auth-btn');
-    btn.disabled = true;
-    btn.textContent = '[ CONNECTING... ]';
-
-    try {
-        const endpoint = authMode === 'register' ? '/auth/register' : '/auth/login';
-        const data = await api('POST', endpoint, { username, password });
-        setAuth(data.access_token, username);
-        showScreen('dashboard');
-    } catch (e) {
-        err.textContent = e.message || 'Connection failed';
-        err.classList.add('show');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = authMode === 'register' ? '[ CREATE ACCOUNT ]' : '[ LOG IN ]';
-    }
-}
-
-function handleLogout() {
-    clearAuth();
-    showScreen('auth');
+    const data = loadData();
+    data.user = name;
+    saveData(data);
+    showScreen('dashboard');
 }
 
 // ════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════
-async function renderDashboard() {
+function renderDashboard() {
+    const data = loadData();
     const content = document.getElementById('dashboard-content');
-    content.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">LOADING...</div>';
+    const partners = data.partners || [];
 
-    try {
-        const partners = await api('GET', '/partners/');
-        const enriched = [];
-        for (const p of partners) {
-            const cycles = await api('GET', '/partners/' + p.id + '/cycles');
-            const lastCycle = cycles.length > 0 ? cycles[0] : null;
-            enriched.push({ ...p, lastCycle, cyclesCount: cycles.length });
-        }
-        partnersCache = enriched;
+    document.getElementById('target-count').textContent =
+        `${partners.length} ${partners.length === 1 ? 'TARGET' : 'TARGETS'}`;
 
-        document.getElementById('target-count').textContent =
-            enriched.length + ' ' + (enriched.length === 1 ? 'TARGET' : 'TARGETS');
-
-        if (enriched.length === 0) {
-            content.innerHTML =
-                '<div class="empty-state">' +
-                '<div class="empty-icon">◎</div>' +
-                '<div class="empty-text">NO ACTIVE TARGETS<br>Add a partner to start monitoring</div>' +
-                '<button class="btn-add" onclick="showAddScreen()">[ + ADD TARGET ]</button>' +
-                '</div>';
-            return;
-        }
-
-        let html = '';
-        enriched.forEach(function(p, idx) {
-            if (!p.lastCycle) {
-                html +=
-                    '<div class="card" onclick="showDetail(' + idx + ')">' +
-                    '<div class="card-accent" style="background:var(--text-muted)"></div>' +
-                    '<div class="card-body">' +
-                    '<div class="card-header">' +
-                    '<div class="card-name">' + escHtml(p.name.toUpperCase()) + '</div>' +
-                    '<div class="status-badge" style="color:var(--text-muted);border-color:var(--text-muted)">NO DATA</div>' +
-                    '</div>' +
-                    '<div class="mood-text">Add a cycle start date to begin monitoring</div>' +
-                    '</div></div>';
-                return;
-            }
-            var s = calcPhase(p.lastCycle.start_date, p.cycle_length, p.period_length);
-            var pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
-            html +=
-                '<div class="card" onclick="showDetail(' + idx + ')">' +
-                '<div class="card-accent" style="background:' + s.color + '"></div>' +
-                '<div class="card-body">' +
-                '<div class="card-header">' +
-                '<div class="card-name">' + escHtml(p.name.toUpperCase()) + '</div>' +
-                '<div class="status-badge" style="color:' + s.color + ';border-color:' + s.color + '">' +
-                s.phaseName.toUpperCase() + '</div></div>' +
-                '<div class="progress-track"><div class="progress-bar" style="width:' + pct + '%;background:' + s.color + '"></div></div>' +
-                '<div class="stats-row">' +
-                '<div class="stat"><div class="stat-label">DAY</div><div class="stat-value">' + s.dayInCycle + ' / ' + s.cycleLen + '</div></div>' +
-                '<div class="stat"><div class="stat-label">ENERGY</div><div class="stat-value" style="color:' + s.energyColor + '">' + s.energy + '</div></div>' +
-                '<div class="stat"><div class="stat-label">NEXT CYCLE</div><div class="stat-value">' + s.daysUntilNext + 'd</div></div>' +
-                '</div>' +
-                '<div class="mood-text">' + s.mood + '</div>' +
-                '</div></div>';
-        });
-
-        html += '<div class="btn-add-more" onclick="showAddScreen()">[ + ADD TARGET ]</div>';
-        content.innerHTML = html;
-    } catch (e) {
-        content.innerHTML = '<div class="error-msg show">' + escHtml(e.message) + '</div>';
+    if (partners.length === 0) {
+        content.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">◎</div>
+                <div class="empty-text">NO ACTIVE TARGETS<br>Add a partner to start monitoring</div>
+                <button class="btn-add" onclick="showAddScreen()">[ + ADD TARGET ]</button>
+            </div>`;
+        return;
     }
-}
 
-function escHtml(s) {
-    var d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
+    let html = '';
+    partners.forEach((p, idx) => {
+        const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
+        const pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
+
+        html += `<div class="card" onclick="showDetail(${idx})">
+            <div class="card-accent" style="background:${s.color}"></div>
+            <div class="card-body">
+                <div class="card-header">
+                    <div class="card-name">${p.name.toUpperCase()}</div>
+                    <div class="status-badge" style="border-color:${s.color};color:${s.color}">${s.phaseName.toUpperCase()}</div>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-bar" style="width:${pct}%;background:${s.color}"></div>
+                </div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-label">DAY</div>
+                        <div class="stat-value">${s.dayInCycle}/${s.cycleLen}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">ENERGY</div>
+                        <div class="stat-value" style="color:${s.energyColor}">${s.energy}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">NEXT CYCLE</div>
+                        <div class="stat-value">${s.daysUntilNext}d</div>
+                    </div>
+                </div>
+                <div class="mood-text">${s.mood}</div>
+            </div>
+        </div>`;
+    });
+
+    html += `<div class="btn-add-more" onclick="showAddScreen()">[ + ADD TARGET ]</div>`;
+    content.innerHTML = html;
 }
 
 // ════════════════════════════════════════════
@@ -1066,245 +1138,510 @@ function showAddScreen() {
     document.getElementById('add-name').value = '';
     document.getElementById('add-date').value = '';
     document.getElementById('add-error').classList.remove('show');
+    selectedCycleLength = 28;
+    selectedPeriodLength = 5;
     renderChips();
 }
 
 function renderChips() {
-    document.getElementById('cycle-chips').innerHTML = [25,26,27,28,29,30,31,32].map(function(v) {
-        return '<div class="chip ' + (v===selectedCycleLength?'active':'') + '" onclick="selectedCycleLength=' + v + ';renderChips()">' + v + '</div>';
-    }).join('');
-    document.getElementById('period-chips').innerHTML = [3,4,5,6,7].map(function(v) {
-        return '<div class="chip ' + (v===selectedPeriodLength?'active':'') + '" onclick="selectedPeriodLength=' + v + ';renderChips()">' + v + '</div>';
-    }).join('');
+    document.getElementById('cycle-chips').innerHTML = [25,26,27,28,29,30,31,32].map(v =>
+        `<div class="chip ${v===selectedCycleLength?'active':''}" onclick="selectedCycleLength=${v};renderChips()">${v}</div>`
+    ).join('');
+    document.getElementById('period-chips').innerHTML = [3,4,5,6,7].map(v =>
+        `<div class="chip ${v===selectedPeriodLength?'active':''}" onclick="selectedPeriodLength=${v};renderChips()">${v}</div>`
+    ).join('');
 }
 
-async function handleAddPartner() {
-    var name = document.getElementById('add-name').value.trim();
-    var dateVal = document.getElementById('add-date').value;
-    var err = document.getElementById('add-error');
-    err.classList.remove('show');
+function handleAddPartner() {
+    const name = document.getElementById('add-name').value.trim();
+    const dateVal = document.getElementById('add-date').value;
+    const err = document.getElementById('add-error');
 
     if (!name) { err.textContent = 'Enter target name'; err.classList.add('show'); return; }
     if (!dateVal) { err.textContent = 'Select cycle start date'; err.classList.add('show'); return; }
 
-    try {
-        var partner = await api('POST', '/partners/', {
-            name: name,
-            cycle_length: selectedCycleLength,
-            period_length: selectedPeriodLength,
-        });
-        await api('POST', '/partners/' + partner.id + '/cycles', { start_date: dateVal });
-        showScreen('dashboard');
-    } catch (e) {
-        err.textContent = e.message;
-        err.classList.add('show');
-    }
+    const data = loadData();
+    data.partners.push({
+        name,
+        startDate: dateVal,
+        cycleLen: selectedCycleLength,
+        periodLen: selectedPeriodLength,
+    });
+    saveData(data);
+    showScreen('dashboard');
 }
+
+// ════════════════════════════════════════════
+// MOOD SIGNALS — definitions
+// ════════════════════════════════════════════
+const MOOD_OPTIONS = [
+    { id: 'happy',     icon: '&#9786;',  label: 'HAPPY' },
+    { id: 'calm',      icon: '&#9788;',  label: 'CALM' },
+    { id: 'energetic', icon: '&#9889;',  label: 'ENERGY' },
+    { id: 'loving',    icon: '&#9829;',  label: 'LOVING' },
+    { id: 'sad',       icon: '&#9790;',  label: 'SAD' },
+    { id: 'angry',     icon: '&#9762;',  label: 'ANGRY' },
+    { id: 'anxious',   icon: '&#9888;',  label: 'ANXIOUS' },
+    { id: 'tired',     icon: '&#9683;',  label: 'TIRED' },
+];
+
+// Adaptive tips based on mood patterns per phase
+const ADAPTIVE_TIPS = {
+    menstruation: {
+        sad:       "Based on your logs: she tends to be emotional during this phase. Extra gentleness required",
+        angry:     "Your signals show high irritability here. Keep a low profile and bring comfort food",
+        tired:     "She's consistently exhausted at this stage. Handle ALL chores without being asked",
+        anxious:   "Anxiety spikes detected. Create a calm environment — dim lights, quiet space",
+        happy:     "Surprisingly good moods logged here before! She might be more resilient than expected",
+    },
+    follicular: {
+        energetic: "High energy confirmed by your logs! Perfect time for active dates and adventures",
+        happy:     "Your signals confirm peak happiness. Make the most of it — plan something special",
+        loving:    "Romance signals are strong here. Compliments and quality time go a long way",
+        sad:       "Unusual sadness detected in this phase. Something external might be going on — check in gently",
+    },
+    ovulation: {
+        loving:    "Peak romance confirmed! Your logs show she's most affectionate now. Step up your game",
+        energetic: "Maximum energy logged. She'll want to go out, socialize, be active",
+        anxious:   "Some anxiety despite peak phase. She might be overthinking — be reassuring",
+        angry:     "Unexpected irritability during ovulation. External stress possible — be supportive",
+    },
+    luteal: {
+        tired:     "Fatigue is consistent here. Don't plan anything demanding — cozy nights in",
+        sad:       "Mood drops are a pattern. Comfort food, movies, and patience are your weapons",
+        anxious:   "Anxiety builds up here according to your logs. Be extra patient and present",
+        angry:     "Irritability creeping in early. Avoid controversial topics and do extra chores",
+        calm:      "She stays calm through luteal — that's rare! Still, don't push your luck",
+    },
+    pms: {
+        angry:     "DEFCON 1 confirmed by your logs. Maximum caution. Do everything, say nothing",
+        sad:       "Deep sadness is a pattern here. Be her rock. Hugs, tea, chocolate — repeat",
+        anxious:   "Severe anxiety logged during PMS. Create safety and predictability around her",
+        tired:     "Complete exhaustion detected. She needs rest above all else. Take over everything",
+        happy:     "Rare happy signals during PMS! She handles it well — but stay vigilant",
+        calm:      "She stays remarkably calm. You got lucky — but keep being supportive anyway",
+    },
+};
+
+let selectedSignalMoods = [];
+let currentRecorder = null;
+let currentAudioBlob = null;
 
 // ════════════════════════════════════════════
 // DETAIL
 // ════════════════════════════════════════════
-async function showDetail(idx) {
+function showDetail(idx) {
     showScreen('detail');
-    var content = document.getElementById('detail-content');
-    content.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">LOADING...</div>';
-
-    var p = partnersCache[idx];
+    const data = loadData();
+    const p = data.partners[idx];
     if (!p) return;
 
-    if (!p.lastCycle) {
-        content.innerHTML =
-            '<div class="section">' +
-            '<div class="section-title">NO CYCLE DATA</div>' +
-            '<div class="section-line"></div>' +
-            '<div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">Add the first period start date to begin monitoring.</div>' +
-            '<div class="form-label">PERIOD START DATE</div>' +
-            '<input class="form-input" type="date" id="first-cycle-date" value="' + new Date().toISOString().slice(0,10) + '">' +
-            '<button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="addFirstCycle(' + idx + ')">[ ADD CYCLE ]</button>' +
-            '<div class="error-msg" id="first-cycle-error"></div>' +
-            '</div>' +
-            '<button class="delete-btn" onclick="deletePartner(' + idx + ')">[ DELETE TARGET ]</button>' +
-            '<div class="page-bottom"></div>';
+    selectedSignalMoods = [];
+    currentAudioBlob = null;
+
+    const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
+    const forecast = getForecast(p.startDate, p.cycleLen, p.periodLen, 14);
+    const pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
+    const content = document.getElementById('detail-content');
+
+    // Build adaptive intel from signal history
+    const adaptiveIntel = getAdaptiveIntel(p, s.phase);
+    const hasAdaptive = adaptiveIntel.length > 0;
+
+    // Build signal log HTML
+    const signals = (p.signals || []).slice(-10).reverse();
+    const signalLogHtml = signals.length === 0
+        ? '<div class="signal-log-empty">NO SIGNALS LOGGED YET</div>'
+        : signals.map(sig => {
+            const moodLabels = (sig.moods || []).map(m => {
+                const opt = MOOD_OPTIONS.find(o => o.id === m);
+                return opt ? opt.icon + ' ' + opt.label : m;
+            }).join(', ');
+            return `<div class="signal-log-item">
+                <div class="signal-log-header">
+                    <span class="signal-log-date">${sig.date} // DAY ${sig.dayInCycle || '?'}/${sig.cycleLen || '?'}</span>
+                    <span class="signal-log-phase" style="border-color:${sig.phaseColor || 'var(--text-muted)'};color:${sig.phaseColor || 'var(--text-muted)'}">${(sig.phaseName || 'N/A').toUpperCase()}</span>
+                </div>
+                ${moodLabels ? `<div class="signal-log-moods">${moodLabels}</div>` : ''}
+                ${sig.text ? `<div class="signal-log-text">${sig.text}</div>` : ''}
+                ${sig.hasAudio ? `<div style="color:var(--text-muted);font-size:10px;margin-top:4px;letter-spacing:1px;">&#127908; AUDIO ATTACHED</div>` : ''}
+            </div>`;
+        }).join('');
+
+    content.innerHTML = `
+    <div class="hud-card">
+        <div class="hud-accent" style="background:${s.color}"></div>
+        <div class="hud-body">
+            <div class="target-name">${p.name.toUpperCase()}</div>
+            <div class="phase-row">
+                <div class="phase-dot" style="background:${s.color}"></div>
+                <div class="phase-name" style="color:${s.color}">${s.phaseName.toUpperCase()}</div>
+            </div>
+            <div class="big-day">
+                <span class="big-day-number">${s.dayInCycle}</span>
+                <span class="big-day-total">/ ${s.cycleLen}</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-bar" style="width:${pct}%;background:${s.color}"></div>
+            </div>
+            <div class="hud-mood">${s.mood}</div>
+            <div class="mini-stats">
+                <div class="mini-stat">
+                    <div class="mini-stat-label">PHASE LEFT</div>
+                    <div class="mini-stat-value">${s.daysLeft}d</div>
+                </div>
+                <div class="mini-stat-divider"></div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">NEXT CYCLE</div>
+                    <div class="mini-stat-value">${s.daysUntilNext}d</div>
+                </div>
+                <div class="mini-stat-divider"></div>
+                <div class="mini-stat">
+                    <div class="mini-stat-label">DATE</div>
+                    <div class="mini-stat-value">${s.nextPeriodDate.slice(5)}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SIGNAL INPUT ═══ -->
+    <div class="signal-section">
+        <div class="section-title" style="color:var(--amber)">SUBMIT SIGNAL</div>
+        <div class="section-line" style="background:var(--amber);opacity:0.4;"></div>
+        <div style="color:var(--text-secondary);font-size:11px;margin-bottom:12px;line-height:1.5;">
+            Log her current mood and behavior. Your signals train the system for better predictions.
+        </div>
+
+        <div class="form-label">MOOD INDICATORS</div>
+        <div class="signal-mood-grid" id="signal-mood-grid">
+            ${MOOD_OPTIONS.map(m => `<div class="mood-chip" data-mood="${m.id}" onclick="toggleSignalMood('${m.id}')">
+                <span class="mood-chip-icon">${m.icon}</span>${m.label}
+            </div>`).join('')}
+        </div>
+
+        <div class="form-label">FIELD NOTES</div>
+        <textarea class="signal-textarea" id="signal-text" placeholder="What's happening? Behavior, reactions, context..."></textarea>
+
+        <div class="signal-actions">
+            <button class="mic-btn" id="mic-btn" onclick="toggleAudioRecording()">&#127908;</button>
+            <button class="signal-btn" onclick="submitSignal(${idx})">[ TRANSMIT SIGNAL ]</button>
+        </div>
+        <div id="audio-status" style="color:var(--text-muted);font-size:10px;margin-top:6px;letter-spacing:1px;display:none;"></div>
+        <div class="signal-success" id="signal-success">SIGNAL RECEIVED // Intel updated</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">INTEL${hasAdaptive ? '<span class="adaptive-badge">ADAPTIVE</span>' : ''}</div>
+        <div class="section-line"></div>
+        ${hasAdaptive ? adaptiveIntel.map(t => `<div class="tip-row"><span class="tip-bullet" style="color:var(--amber)">&gt;</span><span class="tip-text" style="color:var(--amber)">${t}</span></div>`).join('') : ''}
+        ${s.tips.map(t => `<div class="tip-row"><span class="tip-bullet">&gt;</span><span class="tip-text">${t}</span></div>`).join('')}
+    </div>
+
+    <div class="section">
+        <div class="section-title danger">THREATS</div>
+        <div class="section-line danger"></div>
+        ${s.avoid.map(a => `<div class="tip-row"><span class="tip-bullet danger">!</span><span class="tip-text muted">${a}</span></div>`).join('')}
+    </div>
+
+    <div class="section">
+        <div class="section-title" style="color:var(--amber)">SIGNAL LOG</div>
+        <div class="section-line" style="background:var(--amber);opacity:0.3;"></div>
+        ${signalLogHtml}
+    </div>
+
+    <div class="section">
+        <div class="section-title">14-DAY FORECAST</div>
+        <div class="section-line"></div>
+        ${forecast.map((day, i) => `<div class="forecast-row ${i===0?'today':''}">
+            <span class="forecast-day ${i===0?'today':''}">${day.dayName}</span>
+            <span class="forecast-date">${day.date.slice(5)}</span>
+            <span class="forecast-dot" style="background:${day.color}"></span>
+            <span class="forecast-phase" style="color:${day.color}">${day.phaseName}</span>
+            <span class="forecast-energy">${day.energy}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="section">
+        <div class="section-title" style="color:var(--green)">DATA INPUT</div>
+        <div class="section-line" style="background:var(--green)"></div>
+        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">
+            Period started earlier or later than forecast? Enter the actual date — the forecast will recalculate.
+        </div>
+        <div class="form-label">ACTUAL PERIOD START</div>
+        <input class="form-input" type="date" id="actual-period-date" value="${new Date().toISOString().slice(0,10)}">
+        <button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="updatePeriodStart(${idx})">
+            [ UPDATE CYCLE ]
+        </button>
+        <div class="error-msg" id="update-error"></div>
+        <div id="update-success" style="display:none;background:rgba(16,185,129,0.1);border:1px solid #065f46;color:var(--green);font-size:12px;padding:10px 14px;border-radius:4px;margin-top:8px;"></div>
+    </div>
+
+    <button class="delete-btn" onclick="deletePartner(${idx})">[ DELETE TARGET ]</button>
+    <div class="page-bottom"></div>`;
+}
+
+// ════════════════════════════════════════════
+// SIGNAL INPUT LOGIC
+// ════════════════════════════════════════════
+function toggleSignalMood(moodId) {
+    const idx = selectedSignalMoods.indexOf(moodId);
+    if (idx >= 0) selectedSignalMoods.splice(idx, 1);
+    else selectedSignalMoods.push(moodId);
+
+    document.querySelectorAll('#signal-mood-grid .mood-chip').forEach(chip => {
+        chip.classList.toggle('active', selectedSignalMoods.includes(chip.dataset.mood));
+    });
+}
+
+function toggleAudioRecording() {
+    const btn = document.getElementById('mic-btn');
+    const statusEl = document.getElementById('audio-status');
+
+    if (currentRecorder && currentRecorder.state === 'recording') {
+        currentRecorder.stop();
+        btn.classList.remove('recording');
         return;
     }
 
-    var s = calcPhase(p.lastCycle.start_date, p.cycle_length, p.period_length);
-    var forecast = getForecast(p.lastCycle.start_date, p.cycle_length, p.period_length, 14);
-    var pct = (s.dayInCycle / s.cycleLen * 100).toFixed(1);
-
-    // Load correction history
-    var correctionsHtml = '';
-    try {
-        var corrections = await api('GET', '/partners/' + p.id + '/corrections');
-        if (corrections.length > 0) {
-            correctionsHtml = '<div class="section">' +
-                '<div class="section-title" style="color:var(--violet)">CYCLE HISTORY</div>' +
-                '<div class="section-line" style="background:var(--violet)"></div>';
-            corrections.forEach(function(c) {
-                correctionsHtml +=
-                    '<div class="forecast-row">' +
-                    '<span class="forecast-date" style="width:80px;">' + c.created_at.slice(0,10) + '</span>' +
-                    '<span style="color:var(--red);font-size:11px;">' + c.old_start_date + '</span>' +
-                    '<span style="color:var(--text-muted);font-size:11px;margin:0 4px;">→</span>' +
-                    '<span style="color:var(--green);font-size:11px;">' + c.new_start_date + '</span>' +
-                    '</div>';
-            });
-            correctionsHtml += '</div>';
-        }
-    } catch (e) { /* corrections are optional */ }
-
-    var tipsHtml = s.tips.map(function(t) {
-        return '<div class="tip-row"><span class="tip-bullet">&gt;</span><span class="tip-text">' + t + '</span></div>';
-    }).join('');
-
-    var avoidHtml = s.avoid.map(function(a) {
-        return '<div class="tip-row"><span class="tip-bullet danger">!</span><span class="tip-text muted">' + a + '</span></div>';
-    }).join('');
-
-    var forecastHtml = forecast.map(function(day, i) {
-        return '<div class="forecast-row ' + (i===0?'today':'') + '">' +
-            '<span class="forecast-day ' + (i===0?'today':'') + '">' + day.dayName + '</span>' +
-            '<span class="forecast-date">' + day.date.slice(5) + '</span>' +
-            '<span class="forecast-dot" style="background:' + day.color + '"></span>' +
-            '<span class="forecast-phase" style="color:' + day.color + '">' + day.phaseName + '</span>' +
-            '<span class="forecast-energy">' + day.energy + '</span>' +
-            '</div>';
-    }).join('');
-
-    content.innerHTML =
-        '<div class="hud-card">' +
-        '<div class="hud-accent" style="background:' + s.color + '"></div>' +
-        '<div class="hud-body">' +
-        '<div class="target-name">' + escHtml(p.name.toUpperCase()) + '</div>' +
-        '<div class="phase-row">' +
-        '<div class="phase-dot" style="background:' + s.color + '"></div>' +
-        '<div class="phase-name" style="color:' + s.color + '">' + s.phaseName.toUpperCase() + '</div>' +
-        '</div>' +
-        '<div class="big-day"><span class="big-day-number">' + s.dayInCycle + '</span><span class="big-day-total">/ ' + s.cycleLen + '</span></div>' +
-        '<div class="progress-track"><div class="progress-bar" style="width:' + pct + '%;background:' + s.color + '"></div></div>' +
-        '<div class="hud-mood">' + s.mood + '</div>' +
-        '<div class="mini-stats">' +
-        '<div class="mini-stat"><div class="mini-stat-label">PHASE LEFT</div><div class="mini-stat-value">' + s.daysLeft + 'd</div></div>' +
-        '<div class="mini-stat-divider"></div>' +
-        '<div class="mini-stat"><div class="mini-stat-label">NEXT CYCLE</div><div class="mini-stat-value">' + s.daysUntilNext + 'd</div></div>' +
-        '<div class="mini-stat-divider"></div>' +
-        '<div class="mini-stat"><div class="mini-stat-label">DATE</div><div class="mini-stat-value">' + s.nextPeriodDate.slice(5) + '</div></div>' +
-        '</div></div></div>' +
-
-        '<div class="section"><div class="section-title">INTEL</div><div class="section-line"></div>' + tipsHtml + '</div>' +
-
-        '<div class="section"><div class="section-title danger">THREATS</div><div class="section-line danger"></div>' + avoidHtml + '</div>' +
-
-        '<div class="section"><div class="section-title">14-DAY FORECAST</div><div class="section-line"></div>' + forecastHtml + '</div>' +
-
-        '<div class="section">' +
-        '<div class="section-title" style="color:var(--green)">DATA INPUT</div>' +
-        '<div class="section-line" style="background:var(--green)"></div>' +
-        '<div style="color:var(--text-secondary);font-size:12px;margin-bottom:12px;">Period started earlier or later than forecast? Enter the actual date — the forecast will recalculate.</div>' +
-        '<div class="form-label">ACTUAL PERIOD START</div>' +
-        '<input class="form-input" type="date" id="actual-period-date" value="' + new Date().toISOString().slice(0,10) + '">' +
-        '<button class="btn-primary" style="background:var(--green);margin-top:4px;" onclick="updatePeriodStart(' + idx + ')">[ UPDATE CYCLE ]</button>' +
-        '<div class="error-msg" id="update-error"></div>' +
-        '<div id="update-success" style="display:none;background:rgba(16,185,129,0.1);border:1px solid #065f46;color:var(--green);font-size:12px;padding:10px 14px;border-radius:4px;margin-top:8px;"></div>' +
-        '</div>' +
-
-        correctionsHtml +
-
-        '<button class="delete-btn" onclick="deletePartner(' + idx + ')">[ DELETE TARGET ]</button>' +
-        '<div class="page-bottom"></div>';
-}
-
-async function addFirstCycle(idx) {
-    var p = partnersCache[idx];
-    var dateVal = document.getElementById('first-cycle-date').value;
-    var err = document.getElementById('first-cycle-error');
-    if (!dateVal) { err.textContent = 'Select a date'; err.classList.add('show'); return; }
-
-    try {
-        await api('POST', '/partners/' + p.id + '/cycles', { start_date: dateVal });
-        showScreen('dashboard');
-    } catch (e) {
-        err.textContent = e.message;
-        err.classList.add('show');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        statusEl.textContent = 'Audio not supported in this browser';
+        statusEl.style.display = 'block';
+        return;
     }
+
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        currentRecorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        currentRecorder.ondataavailable = e => chunks.push(e.data);
+        currentRecorder.onstop = () => {
+            stream.getTracks().forEach(t => t.stop());
+            currentAudioBlob = new Blob(chunks, { type: 'audio/webm' });
+            statusEl.textContent = 'AUDIO CAPTURED // ' + Math.round(currentAudioBlob.size / 1024) + 'KB';
+            statusEl.style.display = 'block';
+            statusEl.style.color = 'var(--green)';
+        };
+
+        currentRecorder.start();
+        btn.classList.add('recording');
+        statusEl.textContent = 'RECORDING...';
+        statusEl.style.display = 'block';
+        statusEl.style.color = 'var(--red)';
+
+        // Auto-stop after 60s
+        setTimeout(() => {
+            if (currentRecorder && currentRecorder.state === 'recording') {
+                currentRecorder.stop();
+                btn.classList.remove('recording');
+            }
+        }, 60000);
+    }).catch(() => {
+        statusEl.textContent = 'Microphone access denied';
+        statusEl.style.display = 'block';
+    });
 }
 
-async function updatePeriodStart(idx) {
-    var dateVal = document.getElementById('actual-period-date').value;
-    var errEl = document.getElementById('update-error');
-    var successEl = document.getElementById('update-success');
+function submitSignal(partnerIdx) {
+    const text = document.getElementById('signal-text').value.trim();
+    const successEl = document.getElementById('signal-success');
+
+    if (selectedSignalMoods.length === 0 && !text && !currentAudioBlob) {
+        successEl.style.display = 'block';
+        successEl.style.color = 'var(--red)';
+        successEl.style.borderColor = 'var(--red)';
+        successEl.textContent = 'Select at least one mood or enter notes';
+        setTimeout(() => { successEl.style.display = 'none'; }, 2000);
+        return;
+    }
+
+    const data = loadData();
+    const p = data.partners[partnerIdx];
+    if (!p) return;
+
+    const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
+
+    if (!p.signals) p.signals = [];
+
+    const signal = {
+        date: new Date().toISOString().slice(0, 10),
+        time: new Date().toISOString().slice(11, 16),
+        moods: [...selectedSignalMoods],
+        text: text,
+        hasAudio: !!currentAudioBlob,
+        phase: s.phase,
+        phaseName: s.phaseName,
+        phaseColor: s.color,
+        dayInCycle: s.dayInCycle,
+        cycleLen: s.cycleLen,
+    };
+
+    // Store audio as base64 in localStorage (limited size, but works for short clips)
+    if (currentAudioBlob) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            signal.audioData = reader.result;
+            p.signals.push(signal);
+            saveData(data);
+        };
+        reader.readAsDataURL(currentAudioBlob);
+    } else {
+        p.signals.push(signal);
+        saveData(data);
+    }
+
+    // Show success
+    successEl.style.display = 'block';
+    successEl.style.color = 'var(--amber)';
+    successEl.style.borderColor = 'var(--amber)';
+    successEl.textContent = 'SIGNAL RECEIVED // Intel updated';
+
+    // Reset form
+    selectedSignalMoods = [];
+    currentAudioBlob = null;
+    document.getElementById('signal-text').value = '';
+    document.querySelectorAll('#signal-mood-grid .mood-chip').forEach(c => c.classList.remove('active'));
+    const audioStatus = document.getElementById('audio-status');
+    if (audioStatus) audioStatus.style.display = 'none';
+    const micBtn = document.getElementById('mic-btn');
+    if (micBtn) micBtn.classList.remove('recording');
+
+    // Refresh detail after delay
+    setTimeout(() => showDetail(partnerIdx), 1500);
+}
+
+// ════════════════════════════════════════════
+// ADAPTIVE ALGORITHM
+// ════════════════════════════════════════════
+function getAdaptiveIntel(partner, currentPhase) {
+    const signals = partner.signals || [];
+    if (signals.length < 2) return [];
+
+    // Count mood occurrences for the current phase
+    const phaseSignals = signals.filter(s => s.phase === currentPhase);
+    if (phaseSignals.length === 0) return [];
+
+    const moodCounts = {};
+    phaseSignals.forEach(sig => {
+        (sig.moods || []).forEach(m => {
+            moodCounts[m] = (moodCounts[m] || 0) + 1;
+        });
+    });
+
+    // Find dominant moods (appeared in >30% of signals for this phase)
+    const threshold = Math.max(1, phaseSignals.length * 0.3);
+    const dominantMoods = Object.entries(moodCounts)
+        .filter(([, count]) => count >= threshold)
+        .sort((a, b) => b[1] - a[1])
+        .map(([mood]) => mood);
+
+    // Get adaptive tips for dominant moods
+    const tips = [];
+    const phaseTips = ADAPTIVE_TIPS[currentPhase] || {};
+    dominantMoods.forEach(mood => {
+        if (phaseTips[mood]) tips.push(phaseTips[mood]);
+    });
+
+    return tips.slice(0, 3);
+}
+
+function updatePeriodStart(idx) {
+    const dateVal = document.getElementById('actual-period-date').value;
+    const errEl = document.getElementById('update-error');
+    const successEl = document.getElementById('update-success');
     errEl.classList.remove('show');
     successEl.style.display = 'none';
 
     if (!dateVal) { errEl.textContent = 'Select a date'; errEl.classList.add('show'); return; }
 
-    var inputDate = new Date(dateVal);
-    var today = new Date();
+    const inputDate = new Date(dateVal);
+    const today = new Date();
     if (inputDate > today) { errEl.textContent = 'Date cannot be in the future'; errEl.classList.add('show'); return; }
 
-    var p = partnersCache[idx];
-    if (!p || !p.lastCycle) return;
-
-    try {
-        await api('PATCH', '/partners/' + p.id + '/cycles/' + p.lastCycle.id, {
-            start_date: dateVal,
-            reason: 'Manual correction',
-        });
-
-        successEl.textContent = 'Cycle updated! New reference point: ' + dateVal;
-        successEl.style.display = 'block';
-        setTimeout(function() { showDetail(idx); }, 1200);
-    } catch (e) {
-        errEl.textContent = e.message;
-        errEl.classList.add('show');
-    }
-}
-
-async function deletePartner(idx) {
-    if (!confirm('Delete this target?')) return;
-    var p = partnersCache[idx];
+    const data = loadData();
+    const p = data.partners[idx];
     if (!p) return;
 
-    try {
-        await api('DELETE', '/partners/' + p.id);
-        showScreen('dashboard');
-    } catch (e) {
-        alert('Error: ' + e.message);
-    }
+    // Save history of previous start dates
+    if (!p.history) p.history = [];
+    p.history.push({ prevStart: p.startDate, updatedAt: new Date().toISOString() });
+
+    // Update to new actual period start
+    p.startDate = dateVal;
+    saveData(data);
+
+    successEl.textContent = `Cycle updated! New reference point: ${dateVal}`;
+    successEl.style.display = 'block';
+
+    // Re-render detail after short delay so user sees the success message
+    setTimeout(() => showDetail(idx), 1200);
+}
+
+function deletePartner(idx) {
+    if (!confirm('Delete this target?')) return;
+    const data = loadData();
+    data.partners.splice(idx, 1);
+    saveData(data);
+    showScreen('dashboard');
 }
 
 // ════════════════════════════════════════════
 // SETTINGS
 // ════════════════════════════════════════════
 function renderSettings() {
-    document.getElementById('settings-user').textContent = 'Callsign: ' + (currentUsername || 'N/A');
+    const data = loadData();
+    document.getElementById('settings-user').textContent = `Callsign: ${data.user || 'N/A'}`;
+}
+
+function handleReset() {
+    if (!confirm('Delete all data? This is irreversible.')) return;
+    localStorage.removeItem('cb_data');
+    location.reload();
 }
 
 // ════════════════════════════════════════════
 // NOTIFICATIONS & PWA
 // ════════════════════════════════════════════
-var swRegistration = null;
+let swRegistration = null;
 
 function initServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(function(reg) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
             swRegistration = reg;
             updateNotifUI();
             checkDailyNotification();
-        }).catch(function(err) { console.log('SW registration failed:', err); });
+        }).catch(err => console.log('SW registration failed:', err));
     }
 }
 
-function getNotifEnabled() { return localStorage.getItem('cb_notif') === 'on'; }
-function setNotifEnabled(val) { localStorage.setItem('cb_notif', val ? 'on' : 'off'); }
-function getLastNotifDate() { return localStorage.getItem('cb_last_notif'); }
-function setLastNotifDate() { localStorage.setItem('cb_last_notif', new Date().toISOString().slice(0, 10)); }
+function getNotifEnabled() {
+    return localStorage.getItem('cb_notif') === 'on';
+}
+
+function setNotifEnabled(val) {
+    localStorage.setItem('cb_notif', val ? 'on' : 'off');
+}
+
+function getLastNotifDate() {
+    return localStorage.getItem('cb_last_notif');
+}
+
+function setLastNotifDate() {
+    localStorage.setItem('cb_last_notif', new Date().toISOString().slice(0, 10));
+}
 
 async function toggleNotifications() {
-    if (!('Notification' in window)) { alert('Your browser does not support notifications'); return; }
-    if (getNotifEnabled()) { setNotifEnabled(false); updateNotifUI(); return; }
+    if (!('Notification' in window)) {
+        alert('Your browser does not support notifications');
+        return;
+    }
 
-    var permission = await Notification.requestPermission();
+    if (getNotifEnabled()) {
+        setNotifEnabled(false);
+        updateNotifUI();
+        return;
+    }
+
+    const permission = await Notification.requestPermission();
     if (permission === 'granted') {
         setNotifEnabled(true);
         updateNotifUI();
@@ -1315,14 +1652,14 @@ async function toggleNotifications() {
 }
 
 function updateNotifUI() {
-    var toggle = document.getElementById('notif-toggle');
-    var status = document.getElementById('notif-status');
-    var testBtn = document.getElementById('notif-test');
+    const toggle = document.getElementById('notif-toggle');
+    const status = document.getElementById('notif-status');
+    const testBtn = document.getElementById('notif-test');
     if (!toggle) return;
 
-    var supported = 'Notification' in window;
-    var enabled = getNotifEnabled();
-    var permission = supported ? Notification.permission : 'denied';
+    const supported = 'Notification' in window;
+    const enabled = getNotifEnabled();
+    const permission = supported ? Notification.permission : 'denied';
 
     if (!supported) {
         toggle.textContent = 'N/A';
@@ -1344,52 +1681,70 @@ function updateNotifUI() {
 }
 
 function buildDailyBriefing() {
-    if (partnersCache.length === 0) return null;
-    var lines = partnersCache.filter(function(p) { return p.lastCycle; }).map(function(p) {
-        var s = calcPhase(p.lastCycle.start_date, p.cycle_length, p.period_length);
-        return p.name + ': ' + s.phaseName + ' (day ' + s.dayInCycle + '/' + s.cycleLen + ') — ' + s.energy;
+    const data = loadData();
+    const partners = data.partners || [];
+    if (partners.length === 0) return null;
+
+    const lines = partners.map(p => {
+        const s = calcPhase(p.startDate, p.cycleLen, p.periodLen);
+        return `${p.name}: ${s.phaseName} (day ${s.dayInCycle}/${s.cycleLen}) — ${s.energy}`;
     });
-    if (lines.length === 0) return null;
+
     return {
-        title: 'CYCLE BUDDY // ' + new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
+        title: `CYCLE BUDDY // ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`,
         body: lines.join('\n'),
     };
 }
 
 function sendNotification(title, body, tag) {
     if (swRegistration) {
-        swRegistration.showNotification(title, { body: body, tag: tag || 'cb-' + Date.now(), vibrate: [200, 100, 200], requireInteraction: false });
+        swRegistration.showNotification(title, {
+            body,
+            tag: tag || 'cb-' + Date.now(),
+            vibrate: [200, 100, 200],
+            requireInteraction: false,
+        });
     } else if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, { body: body, tag: tag || 'cb-' + Date.now() });
+        new Notification(title, { body, tag: tag || 'cb-' + Date.now() });
     }
 }
 
 function checkDailyNotification() {
     if (!getNotifEnabled()) return;
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    var today = new Date().toISOString().slice(0, 10);
+
+    const today = new Date().toISOString().slice(0, 10);
     if (getLastNotifDate() === today) return;
-    var briefing = buildDailyBriefing();
+
+    const briefing = buildDailyBriefing();
     if (!briefing) return;
+
     sendNotification(briefing.title, briefing.body, 'cb-daily-' + today);
     setLastNotifDate();
 }
 
 function sendTestNotification() {
-    var briefing = buildDailyBriefing();
-    if (briefing) { sendNotification(briefing.title, briefing.body, 'cb-test'); }
-    else { sendNotification('CYCLE BUDDY', 'No active targets for briefing', 'cb-test'); }
+    const briefing = buildDailyBriefing();
+    if (briefing) {
+        sendNotification(briefing.title, briefing.body, 'cb-test');
+    } else {
+        sendNotification('CYCLE BUDDY', 'No active targets for briefing', 'cb-test');
+    }
 }
 
-setInterval(function() { checkDailyNotification(); }, 6 * 60 * 60 * 1000);
+// Schedule periodic check (every 6 hours while app is open)
+setInterval(() => {
+    checkDailyNotification();
+}, 6 * 60 * 60 * 1000);
 
 // ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
-if (authToken) {
+const initData = loadData();
+if (initData.user) {
     showScreen('dashboard');
 } else {
-    showScreen('auth');
+    showScreen('welcome');
 }
 
 initServiceWorker();

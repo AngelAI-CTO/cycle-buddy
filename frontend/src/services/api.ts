@@ -1,11 +1,4 @@
-import Constants from "expo-constants";
-
-// In production, set API_URL in app.json extra or env
-// For Railway: "https://cycle-buddy-production.up.railway.app/api"
-const API_BASE =
-  Constants.expoConfig?.extra?.apiUrl ||
-  process.env.EXPO_PUBLIC_API_URL ||
-  "http://localhost:8000/api";
+const API_BASE = "http://localhost:8000/api";
 
 let authToken: string | null = null;
 
