@@ -2,7 +2,7 @@
 nixPkgs = ["python311", "python311Packages.pip"]
 
 [phases.install]
-cmds = ["python3 -m ensurepip", "python3 -m pip install -r backend/requirements.txt"]
+cmds = ["python3 -m venv /opt/venv", "/opt/venv/bin/pip install -r backend/requirements.txt"]
 
 [start]
-cmd = "cd backend && python -m gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+cmd = "cd backend && /opt/venv/bin/python -m gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
