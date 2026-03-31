@@ -1553,10 +1553,6 @@ function updatePeriodStart(idx) {
 
     if (!dateVal) { errEl.textContent = 'Select a date'; errEl.classList.add('show'); return; }
 
-    const inputDate = new Date(dateVal);
-    const today = new Date();
-    if (inputDate > today) { errEl.textContent = 'Date cannot be in the future'; errEl.classList.add('show'); return; }
-
     const data = loadData();
     const p = data.partners[idx];
     if (!p) return;
