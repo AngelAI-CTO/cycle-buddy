@@ -5,3 +5,4 @@ sqlalchemy==2.0.35
 aiosqlite==0.20.0
 python-multipart==0.0.9
 apscheduler==3.10.4
+gunicorn==22.0.0
