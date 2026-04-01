@@ -751,8 +751,28 @@
                     [ START MONITORING ]
                 </button>
 
+                <div id="welcome-divider" style="display:flex;align-items:center;gap:12px;margin:16px 0;">
+                    <div style="flex:1;height:1px;background:var(--border)"></div>
+                    <span style="color:var(--text-muted);font-size:10px;letter-spacing:2px;">OR SYNC ACROSS DEVICES</span>
+                    <div style="flex:1;height:1px;background:var(--border)"></div>
+                </div>
+
+                <div id="auth-section">
+                    <div class="form-label">USERNAME</div>
+                    <input class="form-input" id="auth-username" placeholder="e.g. andrew42" autocomplete="username">
+                    <div class="form-label">PASSWORD</div>
+                    <input class="form-input" id="auth-password" type="password" placeholder="min 6 characters" autocomplete="current-password">
+                    <div class="error-msg" id="auth-error"></div>
+                    <button class="btn-primary" style="background:var(--green);" onclick="handleAuth('login')">
+                        [ LOGIN ]
+                    </button>
+                    <button class="btn-primary" style="background:var(--surface);color:var(--cyan);border:1px solid var(--cyan);" onclick="handleAuth('register')">
+                        [ CREATE ACCOUNT ]
+                    </button>
+                </div>
+
                 <div style="color:var(--text-muted);font-size:10px;text-align:center;margin-top:16px;letter-spacing:1px;">
-                    All data is stored only on your device
+                    Local mode works offline. Account enables cross-device sync.
                 </div>
             </div>
         </div>
@@ -815,7 +835,7 @@
                     <div class="tip-text" style="color:var(--text-secondary);line-height:1.8;">
                         CYCLE BUDDY — a tactical system for monitoring female cycles.<br><br>
                         Helps men survive, understand, and be better partners.<br><br>
-                        All data is stored locally on your device.
+                        Data stored locally. Create an account for cross-device sync.
                     </div>
                     <div style="color:var(--text-muted);font-size:11px;margin-top:16px;letter-spacing:1px;">
                         v1.0.0 // BUILD 001
@@ -842,6 +862,13 @@
                     <div class="section-title">AGENT</div>
                     <div class="section-line"></div>
                     <div id="settings-user" style="color:var(--text-secondary);font-size:13px;"></div>
+                    <div id="settings-sync" style="color:var(--text-muted);font-size:11px;margin-top:8px;letter-spacing:1px;"></div>
+                    <button id="sync-now-btn" style="display:none;margin-top:8px;background:none;border:1px solid var(--cyan-dim);color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 16px;border-radius:4px;cursor:pointer;width:100%;" onclick="manualSync()">
+                        [ SYNC NOW ]
+                    </button>
+                    <button id="logout-btn" style="display:none;margin-top:8px;background:none;border:1px solid var(--amber);color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;padding:8px 16px;border-radius:4px;cursor:pointer;width:100%;" onclick="handleLogout()">
+                        [ LOGOUT ]
+                    </button>
                 </div>
                 <button class="btn-primary" style="background:var(--surface);color:var(--red);border:1px solid var(--red);" onclick="handleReset()">
                     [ RESET ALL DATA ]
@@ -951,6 +978,167 @@ const PHASES = {
 
 const ENERGY_COLORS = { low: '#ef4444', rising: '#10b981', peak: '#f59e0b', declining: '#8b5cf6' };
 const DAY_NAMES = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+// ════════════════════════════════════════════
+// API & AUTH
+// ════════════════════════════════════════════
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? '' : '';  // same origin in production
+
+function getToken() { return localStorage.getItem('cb_token'); }
+function setToken(t) { if (t) localStorage.setItem('cb_token', t); else localStorage.removeItem('cb_token'); }
+function getLastSync() { return localStorage.getItem('cb_last_sync'); }
+function setLastSync() { localStorage.setItem('cb_last_sync', new Date().toISOString()); }
+
+async function apiCall(method, path, body) {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    try {
+        const res = await fetch(API_BASE + path, {
+            method, headers,
+            body: body ? JSON.stringify(body) : undefined,
+        });
+        if (res.status === 401) { setToken(null); return { ok: false, status: 401, error: 'Session expired' }; }
+        const data = res.ok ? await res.json() : null;
+        return { ok: res.ok, status: res.status, data, error: res.ok ? null : (data?.detail || 'Server error') };
+    } catch (e) {
+        return { ok: false, status: 0, error: 'Network error — working offline' };
+    }
+}
+
+function generateClientId() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+async function handleAuth(mode) {
+    const username = document.getElementById('auth-username').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errEl = document.getElementById('auth-error');
+    errEl.classList.remove('show');
+
+    if (!username || username.length < 3) { errEl.textContent = 'Username: min 3 characters'; errEl.classList.add('show'); return; }
+    if (!password || password.length < 6) { errEl.textContent = 'Password: min 6 characters'; errEl.classList.add('show'); return; }
+
+    const endpoint = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    const res = await apiCall('POST', endpoint, { username, password });
+
+    if (!res.ok) {
+        errEl.textContent = res.error || 'Auth failed';
+        errEl.classList.add('show');
+        return;
+    }
+
+    setToken(res.data.access_token);
+
+    // Save username as user callsign
+    const data = loadData();
+    data.user = username;
+    data.authUser = username;
+    saveData(data);
+
+    // Pull server data and merge
+    await syncPull();
+    showScreen('dashboard');
+}
+
+function handleLogout() {
+    setToken(null);
+    const data = loadData();
+    delete data.authUser;
+    saveData(data);
+    renderSettings();
+}
+
+async function syncPush() {
+    if (!getToken()) return;
+    const data = loadData();
+    const partners = (data.partners || []).map(p => ({
+        name: p.name,
+        start_date: p.startDate || null,
+        cycle_length: p.cycleLen || 28,
+        period_length: p.periodLen || 5,
+        signals: (p.signals || []).map(s => ({
+            date: s.date,
+            time: s.time || null,
+            moods: s.moods || [],
+            text: s.text || null,
+            has_audio: !!s.hasAudio,
+            phase: s.phase,
+            day_in_cycle: s.dayInCycle || null,
+            client_id: s.client_id || null,
+        })),
+    }));
+
+    const res = await apiCall('POST', '/api/sync/push', { partners });
+    if (res.ok) {
+        mergeServerData(res.data);
+        setLastSync();
+    }
+    return res;
+}
+
+async function syncPull() {
+    if (!getToken()) return;
+    const res = await apiCall('GET', '/api/sync/pull');
+    if (res.ok) {
+        mergeServerData(res.data);
+        setLastSync();
+    }
+    return res;
+}
+
+function mergeServerData(serverData) {
+    const data = loadData();
+    const serverPartners = serverData.partners || [];
+
+    serverPartners.forEach(sp => {
+        let local = data.partners.find(p => p.name === sp.name);
+        if (!local) {
+            local = { name: sp.name, startDate: sp.start_date, cycleLen: sp.cycle_length, periodLen: sp.period_length, signals: [] };
+            data.partners.push(local);
+        } else {
+            local.startDate = sp.start_date || local.startDate;
+            local.cycleLen = sp.cycle_length || local.cycleLen;
+            local.periodLen = sp.period_length || local.periodLen;
+        }
+        // Merge signals by client_id
+        const localIds = new Set((local.signals || []).map(s => s.client_id).filter(Boolean));
+        (sp.signals || []).forEach(ss => {
+            if (ss.client_id && localIds.has(ss.client_id)) return; // already exists
+            const phaseInfo = PHASES[ss.phase] || {};
+            local.signals = local.signals || [];
+            local.signals.push({
+                date: ss.date,
+                time: ss.time,
+                moods: ss.moods || [],
+                text: ss.text,
+                hasAudio: ss.has_audio,
+                phase: ss.phase,
+                phaseName: phaseInfo.name || ss.phase,
+                phaseColor: phaseInfo.color || '#999',
+                dayInCycle: ss.day_in_cycle,
+                cycleLen: local.cycleLen,
+                client_id: ss.client_id,
+            });
+        });
+    });
+
+    saveData(data);
+}
+
+async function manualSync() {
+    const btn = document.getElementById('sync-now-btn');
+    btn.textContent = '[ SYNCING... ]';
+    btn.disabled = true;
+    await syncPush();
+    btn.textContent = '[ SYNC NOW ]';
+    btn.disabled = false;
+    renderSettings();
+}
 
 // ════════════════════════════════════════════
 // LOCAL STORAGE
@@ -1166,8 +1354,10 @@ function handleAddPartner() {
         startDate: dateVal,
         cycleLen: selectedCycleLength,
         periodLen: selectedPeriodLength,
+        signals: [],
     });
     saveData(data);
+    if (getToken()) syncPush().catch(() => {});
     showScreen('dashboard');
 }
 
@@ -1473,6 +1663,7 @@ function submitSignal(partnerIdx) {
         phaseColor: s.color,
         dayInCycle: s.dayInCycle,
         cycleLen: s.cycleLen,
+        client_id: generateClientId(),
     };
 
     // Store audio as base64 in localStorage (limited size, but works for short clips)
@@ -1505,7 +1696,8 @@ function submitSignal(partnerIdx) {
     const micBtn = document.getElementById('mic-btn');
     if (micBtn) micBtn.classList.remove('recording');
 
-    // Refresh detail after delay
+    // Sync to server if logged in, then refresh
+    if (getToken()) syncPush().catch(() => {});
     setTimeout(() => showDetail(partnerIdx), 1500);
 }
 
@@ -1564,6 +1756,7 @@ function updatePeriodStart(idx) {
     // Update to new actual period start
     p.startDate = dateVal;
     saveData(data);
+    if (getToken()) syncPush().catch(() => {});
 
     successEl.textContent = `Cycle updated! New reference point: ${dateVal}`;
     successEl.style.display = 'block';
@@ -1585,7 +1778,22 @@ function deletePartner(idx) {
 // ════════════════════════════════════════════
 function renderSettings() {
     const data = loadData();
+    const isAuth = !!getToken();
     document.getElementById('settings-user').textContent = `Callsign: ${data.user || 'N/A'}`;
+    const syncEl = document.getElementById('settings-sync');
+    const syncBtn = document.getElementById('sync-now-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (isAuth) {
+        const lastSync = getLastSync();
+        syncEl.textContent = lastSync ? `Last sync: ${new Date(lastSync).toLocaleString()}` : 'Not synced yet';
+        syncBtn.style.display = 'block';
+        logoutBtn.style.display = 'block';
+    } else {
+        syncEl.textContent = 'Local mode — login to enable sync';
+        syncBtn.style.display = 'none';
+        logoutBtn.style.display = 'none';
+    }
 }
 
 function handleReset() {
