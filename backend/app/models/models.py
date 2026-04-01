@@ -20,12 +20,15 @@ class Partner(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    cycle_length = Column(Integer, default=28)  # days
-    period_length = Column(Integer, default=5)   # days
+    cycle_length = Column(Integer, default=28)
+    period_length = Column(Integer, default=5)
+    start_date = Column(Date, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="partners")
     cycles = relationship("Cycle", back_populates="partner", cascade="all, delete-orphan")
+    signals = relationship("Signal", back_populates="partner", cascade="all, delete-orphan")
 
 
 class Cycle(Base):
@@ -37,3 +40,26 @@ class Cycle(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     partner = relationship("Partner", back_populates="cycles")
+
+
+class Signal(Base):
+    __tablename__ = "signals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    partner_id = Column(Integer, ForeignKey("partners.id"), nullable=False)
+
+    date = Column(Date, nullable=False)
+    time = Column(String, nullable=True)
+    moods = Column(String, nullable=False)  # JSON array as string: '["happy","calm"]'
+    text = Column(String, nullable=True)
+    has_audio = Column(Integer, default=0)
+
+    phase = Column(String, nullable=False)
+    day_in_cycle = Column(Integer, nullable=True)
+    cycle_number = Column(Integer, nullable=True)
+
+    client_id = Column(String, nullable=True, unique=True, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    partner = relationship("Partner", back_populates="signals")

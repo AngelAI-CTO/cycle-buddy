@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from app.database import init_db
-from app.routes import auth, partners
+from app.routes import auth, partners, signals, sync
 
 WEBAPP_DIR = Path(__file__).resolve().parent.parent.parent / "webapp"
 
@@ -33,6 +33,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(partners.router)
+app.include_router(signals.router)
+app.include_router(sync.router)
 
 
 @app.get("/api/health")
